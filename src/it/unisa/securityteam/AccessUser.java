@@ -8,10 +8,10 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.security.MessageDigest;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Scanner;
+
 
 /**
  *
@@ -43,7 +43,7 @@ public class AccessUser {
             System.out.print("\nUser present in database ");
             int repetition = 3;
             while (repetition > 0) {
-                System.out.println("please insert password for voting:");
+                System.out.println("Please insert password for voting:");
                 String psw = scanner.next();
                 if (checkUser(userName, psw)) {
                     System.out.println("You have access!");
@@ -92,6 +92,7 @@ public class AccessUser {
 
     leggiamo ogni chiave del database ed effettuamo per ogni chiave lo xor con il fiscalCode e vediamo se esce 
     lo userName se è cosi allora abbiamo effettuato al codifica
+    Penso che la soluzione migliore sia questo perchè non ho la necessità di scorrere tutta la mappa, 
      */
     private static boolean checkExisting(String fiscalCode, String userName) throws Exception {
         MessageDigest hash = MessageDigest.getInstance("SHA-256");

@@ -1,5 +1,6 @@
 package it.unisa.securityteam;
 
+
 import java.io.Serializable;
 import java.math.BigInteger;
 
@@ -8,7 +9,7 @@ public class ElGamalCT implements Serializable {
 	BigInteger C, C2;
 
 	public ElGamalCT(BigInteger C, BigInteger C2) {
-		this.C = C;
+        this.C = C;
 		this.C2 = C2;
 
 	}
