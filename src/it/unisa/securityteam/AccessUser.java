@@ -14,7 +14,7 @@ import java.util.Locale;
 import java.util.Scanner;
 
 /**
- *https://github.com/Alepao99/SecurityProject.git
+ *
  * @author apaolillo
  */
 public class AccessUser {
