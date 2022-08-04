@@ -71,7 +71,7 @@ public class ElGamal {
         // Test El Gamal Encrypt+Decrypt
 
         {
-            ElGamalSK SK = Setup(64); // in real implementation set security parameter to at least 2048 bits
+            ElGamalSK SK = Setup(2048); // in real implementation set security parameter to at least 2048 bits
 
             System.out.println("Setup for (standard) El Gamal:");
             System.out.println("secret-key = " + SK.s); // print the SK, PK and the group description

@@ -29,23 +29,16 @@ public class SocketListener {
      * same time
      *
      */
-    private int timeStopVoting;
-    private boolean stateRunning;
+    private static final String authStart = "authStart.txt";
+    private static final String authFinish = "authFinish.txt";
+    private static HashMap<String, String> mapAuthStart;
+    private static HashMap<String, String> mapAuthFinish;
+    private static boolean stateRunning;
 
-    private static String database = "database.txt";
-    private static HashMap<String, String> map = new HashMap<>();
-
-
-    public SocketListener(int timeStopVoting) {
-        if (timeStopVoting > 0) {
-            this.timeStopVoting = timeStopVoting;
-        }
-        this.stateRunning = true;
-    }
-
-    private static void readData() {
+    private static HashMap<String, String> readFile(String filename) {
         //System.out.println("-----FILE-----");
-        try ( Scanner sc = new Scanner(new BufferedReader(new FileReader(database)))) {
+        HashMap<String, String> map = new HashMap<>();
+        try ( Scanner sc = new Scanner(new BufferedReader(new FileReader(filename)))) {
             sc.useLocale(Locale.US);
             sc.useDelimiter("\\s");
             while (sc.hasNext()) {
@@ -54,9 +47,15 @@ public class SocketListener {
         } catch (FileNotFoundException ex) {
             Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
+        return map;
     }
 
-    public void startTime() throws InterruptedException {
+    private static void startTime(int timeStopVoting) throws InterruptedException {
+        if (timeStopVoting < 0) {
+            return;
+        }
+        stateRunning = true;
+
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -72,12 +71,15 @@ public class SocketListener {
         t.start();
     }
 
-    public boolean isStateRunning() {
+    private static boolean isStateRunning() {
         return stateRunning;
     }
 
     public static void main(String[] args) throws InterruptedException {
-        if (System.getProperty("javax.net.ssl.keyStore") == null || System.getProperty("javax.net.ssl.keyStorePassword") == null) {
+
+        //HashMap<String, String> mapAuthFinish = sl.readFile(authFinish);
+        if (System.getProperty(
+                "javax.net.ssl.keyStore") == null || System.getProperty("javax.net.ssl.keyStorePassword") == null) {
             // set keystore store location
             System.setProperty("javax.net.ssl.keyStore", "keystoreServerAuth");
             System.setProperty("javax.net.ssl.keyStorePassword", "serverAuthpwd");
@@ -86,19 +88,23 @@ public class SocketListener {
         SSLServerSocket sslserversocket = null;
         SSLSocket sslsocket = null;
         // create a listener on port 9999
+
         try {
             SSLServerSocketFactory sslserversocketfactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
             sslserversocket = (SSLServerSocket) sslserversocketfactory.createServerSocket(4000);
-            SocketListener sl = new SocketListener(Integer.parseInt(args[0]));
-            sl.startTime();
-            readData();
-            while (sl.isStateRunning()) {
+
+            startTime(Integer.parseInt(args[0]));
+            System.out.println("Start Server Auth");
+            mapAuthStart = readFile(authStart);
+            mapAuthFinish = readFile(authFinish);
+            while (isStateRunning()) {
+//Metto anche il read finish perchè ci sarà ogni volta che un utente accede ci sarà
+                //un aggiornamento su questa mappa
                 // blocks the program when no socket floats in
                 sslsocket = (SSLSocket) sslserversocket.accept();
                 System.out.println("sslsocket:" + sslsocket);
                 // assign a handler to process data
-                new SocketHandler(sslsocket, map);
-
+                new SocketHandler(sslsocket, mapAuthStart, mapAuthFinish);
             }
             System.out.println("Tempo scaduto");
         } catch (Exception e) {

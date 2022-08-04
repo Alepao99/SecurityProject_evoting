@@ -5,6 +5,7 @@
 package it.unisa.securityteam;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.security.MessageDigest;
@@ -20,13 +21,18 @@ import java.util.Map;
  */
 public class PreliminarySetting {
 
+    private static final int size = 32;
+    private static final String dirName = "/home/apaolillo/NetBeansProjects/ProjectCyberSecurity/src";
+
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) throws NoSuchAlgorithmException {
-        String database = "database.txt";
+        String authStart = "authStart.txt";
+        String authFinish = "authFinish.txt";
 
-        HashMap<String, String> map = new HashMap<>();
+        HashMap<String, String> mapAuthStart = new HashMap<>(); //chiave = name^CF; value = ID = name^pass
+        HashMap<String, String> mapAuthFinish = new HashMap<>(); //chiave = ID; value = Pkv
 
         List<User> list = new ArrayList<>();
 
@@ -36,21 +42,24 @@ public class PreliminarySetting {
         list.add(new User("m.savarese18@studenti.unisa.it", "PLLLSN99C20A717X", "password4"));
         list.add(new User("prova", "prova", "psw"));
         for (User x : list) {
-            map.put(getKey(x.getUserName(), x.getFiscalCode()), getID(x.getUserName(), x.getPsw()));
+            mapAuthStart.put(getKey(x.getUserName(), x.getFiscalCode()), getID(x.getUserName(), x.getPsw()));
+            mapAuthFinish.put(getID(x.getUserName(), x.getPsw()), "null");
         }
-        writeFile(database, map);
+        writeFile(authStart, mapAuthStart);
+        writeFile(authFinish, mapAuthFinish);
 
     }
 
     private static void writeFile(String filename, Map<String, String> map) {
-        try ( BufferedWriter out = new BufferedWriter(new FileWriter(filename))) {
+        
+        File file = new File(dirName, filename);
+        try ( BufferedWriter out = new BufferedWriter(new FileWriter(file))) {
             for (Map.Entry<String, String> x : map.entrySet()) {
                 out.write(
                         x.getKey() + " "
                         + x.getValue() + "\n"
                 );
             }
-
         } catch (IOException ex) {
             java.util.logging.Logger.getLogger(PreliminarySetting.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
@@ -67,10 +76,10 @@ public class PreliminarySetting {
         byte[] tempFC = hash.digest();
         //String fc = Utils.toHex(tempFC);
 
-        byte encoded[] = new byte[tempName.length];
+        byte encoded[] = new byte[size];
         //System.out.println("message: " + toHex(tempName));
 
-        for (int i = 0; i < tempName.length; i++) {
+        for (int i = 0; i < size; i++) {
             encoded[i] = (byte) (tempName[i] ^ tempFC[i]);
         }
         return Utils.toHex(encoded);
@@ -87,10 +96,10 @@ public class PreliminarySetting {
         byte[] tempPsw = hash.digest();
         //String fc = Utils.toHex(tempPsw);
 
-        byte encoded[] = new byte[tempName.length];
+        byte encoded[] = new byte[size];
         //System.out.println("message: " + toHex(tempName));
 
-        for (int i = 0; i < tempName.length; i++) {
+        for (int i = 0; i < size; i++) {
             encoded[i] = (byte) (tempName[i] ^ tempPsw[i]);
         }
         return Utils.toHex(encoded);

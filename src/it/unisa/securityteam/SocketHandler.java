@@ -7,31 +7,45 @@
  */
 package it.unisa.securityteam;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLSocket;
 
 public class SocketHandler extends Thread {
 
+    private final int size = 32;
+
     private SSLSocket sslsocket = null;
-    private static String key = new String();
-    private HashMap<String, String> map;
+    private String key = null;
+    private HashMap<String, String> mapAuthStart;
+    private HashMap<String, String> mapAuthFinish;
+    private String IdVoter = new String();
 
     /**
      * Constructor - initialize variables
      *
      * @param s - an ssl socket created by SocketListener
      */
-    public SocketHandler(SSLSocket sslsocket, HashMap<String, String> map) {
+    public SocketHandler(SSLSocket sslsocket, HashMap<String, String> mapAuthStart, HashMap<String, String> mapAuthFinish) {
         this.sslsocket = sslsocket;
-        this.map = map;
+        this.mapAuthFinish = mapAuthFinish;
+        this.mapAuthStart = mapAuthStart;
         try {
             start();
         } catch (Exception e) {
@@ -75,6 +89,8 @@ public class SocketHandler extends Thread {
                     if (checkUser(userName, psw)) {
                         objectOut.writeBoolean(true);
                         objectOut.writeObject("You have access!");
+                        protocolElGamalClient(inputStream);
+                        // protocolUpdateDataAuth();
                         break;
                     }
                     objectOut.writeBoolean(false);
@@ -115,14 +131,14 @@ public class SocketHandler extends Thread {
         byte[] tempFC = hash.digest();
         //String fc = Utils.toHex(tempFC);
 
-        byte encoded[] = new byte[tempName.length];
+        byte encoded[] = new byte[size];
         //System.out.println("message: " + toHex(tempName));
 
-        for (int i = 0; i < tempName.length; i++) {
+        for (int i = 0; i < size; i++) {
             encoded[i] = (byte) (tempName[i] ^ tempFC[i]);
         }
-        if (map.containsKey(Utils.toHex(encoded))) {
-            key = Utils.toHex(encoded);
+        if (mapAuthStart.containsKey(Utils.toHex(encoded))) {
+            this.key = Utils.toHex(encoded);
             return true;
         } else {
             return false;
@@ -140,14 +156,50 @@ public class SocketHandler extends Thread {
         byte[] tempPsw = hash.digest();
         //String psw = Utils.toHex(tempPsw);
 
-        byte encoded[] = new byte[tempName.length];
+        byte encoded[] = new byte[size];
         //System.out.println("message: " + toHex(tempName));
 
-        for (int i = 0; i < tempName.length; i++) {
+        for (int i = 0; i < size; i++) {
             encoded[i] = (byte) (tempName[i] ^ tempPsw[i]);
         }
-        String value = map.get(key);
-        return value.compareToIgnoreCase(Utils.toHex(encoded)) == 0;
+        
+        IdVoter = mapAuthStart.get(key);
+        
+        if (IdVoter.compareToIgnoreCase(Utils.toHex(encoded)) == 0) {
+            return true;
+        }
+        IdVoter = "";
+        return false;
+    }
+
+    private void protocolElGamalClient(ObjectInputStream inputStream) {
+        try {
+            BigInteger p = (BigInteger) inputStream.readObject();
+            BigInteger q = (BigInteger) inputStream.readObject();
+            BigInteger g = (BigInteger) inputStream.readObject();
+            BigInteger h = (BigInteger) inputStream.readObject();
+            String pkv = new String(p + " " + q + " " + g + " " + h);
+            mapAuthFinish.put(IdVoter, pkv);
+        } catch (IOException ex) {
+            Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        updateMapAuthFinish();
+
+    }
+
+    private void updateMapAuthFinish() {
+        try ( BufferedWriter out = new BufferedWriter(new FileWriter("authFinish.txt"))) {
+            for (Map.Entry<String, String> x : mapAuthFinish.entrySet()) {
+                out.write(
+                        x.getKey() + " "
+                        + x.getValue() + "\n"
+                );
+            }
+        } catch (IOException ex) {
+            java.util.logging.Logger.getLogger(PreliminarySetting.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
     }
 
 }
