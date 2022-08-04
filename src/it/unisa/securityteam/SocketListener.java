@@ -29,10 +29,10 @@ public class SocketListener {
      * same time
      *
      */
-    private static final String authStart = "authStart.txt";
-    private static final String authFinish = "authFinish.txt";
-    private static HashMap<String, String> mapAuthStart;
-    private static HashMap<String, String> mapAuthFinish;
+    private static final String databaseUA = "databaseUA.txt";
+    private static final String databaseId_Pkv = "databaseId_Pkv.txt";
+    private static HashMap<String, String> mapDatabaseUA;
+    private static HashMap<String, String> mapDatabaseId_Pkv;
     private static boolean stateRunning;
 
     private static HashMap<String, String> readFile(String filename) {
@@ -77,7 +77,6 @@ public class SocketListener {
 
     public static void main(String[] args) throws InterruptedException {
 
-        //HashMap<String, String> mapAuthFinish = sl.readFile(authFinish);
         if (System.getProperty(
                 "javax.net.ssl.keyStore") == null || System.getProperty("javax.net.ssl.keyStorePassword") == null) {
             // set keystore store location
@@ -95,8 +94,9 @@ public class SocketListener {
 
             startTime(Integer.parseInt(args[0]));
             System.out.println("Start Server Auth");
-            mapAuthStart = readFile(authStart);
-            mapAuthFinish = readFile(authFinish);
+            mapDatabaseUA = readFile(databaseUA);
+            mapDatabaseId_Pkv = readFile(databaseId_Pkv);
+            
             while (isStateRunning()) {
 //Metto anche il read finish perchè ci sarà ogni volta che un utente accede ci sarà
                 //un aggiornamento su questa mappa
@@ -104,7 +104,7 @@ public class SocketListener {
                 sslsocket = (SSLSocket) sslserversocket.accept();
                 System.out.println("sslsocket:" + sslsocket);
                 // assign a handler to process data
-                new SocketHandler(sslsocket, mapAuthStart, mapAuthFinish);
+                new SocketHandler(sslsocket, mapDatabaseUA, mapDatabaseId_Pkv);
             }
             System.out.println("Tempo scaduto");
         } catch (Exception e) {

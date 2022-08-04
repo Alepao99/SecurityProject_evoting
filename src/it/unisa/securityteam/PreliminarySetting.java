@@ -28,8 +28,8 @@ public class PreliminarySetting {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws NoSuchAlgorithmException {
-        String authStart = "authStart.txt";
-        String authFinish = "authFinish.txt";
+        String databaseUA = "databaseUA.txt";
+        String databaseId_Pkv = "databaseId_Pkv.txt";
 
         HashMap<String, String> mapAuthStart = new HashMap<>(); //chiave = name^CF; value = ID = name^pass
         HashMap<String, String> mapAuthFinish = new HashMap<>(); //chiave = ID; value = Pkv
@@ -45,8 +45,8 @@ public class PreliminarySetting {
             mapAuthStart.put(getKey(x.getUserName(), x.getFiscalCode()), getID(x.getUserName(), x.getPsw()));
             mapAuthFinish.put(getID(x.getUserName(), x.getPsw()), "null");
         }
-        writeFile(authStart, mapAuthStart);
-        writeFile(authFinish, mapAuthFinish);
+        writeFile(databaseUA, mapAuthStart);
+        writeFile(databaseId_Pkv, mapAuthFinish);
 
     }
 

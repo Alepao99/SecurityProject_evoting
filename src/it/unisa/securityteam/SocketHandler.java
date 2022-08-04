@@ -7,10 +7,7 @@
  */
 package it.unisa.securityteam;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,9 +17,7 @@ import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLSocket;
@@ -33,8 +28,8 @@ public class SocketHandler extends Thread {
 
     private SSLSocket sslsocket = null;
     private String key = null;
-    private HashMap<String, String> mapAuthStart;
-    private HashMap<String, String> mapAuthFinish;
+    private HashMap<String, String> mapDatabaseUA;
+    private HashMap<String, String> mapDatabaseId_Pkv;
     private String IdVoter = new String();
 
     /**
@@ -42,10 +37,10 @@ public class SocketHandler extends Thread {
      *
      * @param s - an ssl socket created by SocketListener
      */
-    public SocketHandler(SSLSocket sslsocket, HashMap<String, String> mapAuthStart, HashMap<String, String> mapAuthFinish) {
+    public SocketHandler(SSLSocket sslsocket, HashMap<String, String> mapDatabaseUA, HashMap<String, String> mapDatabaseId_Pkv) {
         this.sslsocket = sslsocket;
-        this.mapAuthFinish = mapAuthFinish;
-        this.mapAuthStart = mapAuthStart;
+        this.mapDatabaseUA = mapDatabaseUA;
+        this.mapDatabaseId_Pkv = mapDatabaseId_Pkv;
         try {
             start();
         } catch (Exception e) {
@@ -86,7 +81,7 @@ public class SocketHandler extends Thread {
                     objectOut.writeObject("\nPlease insert password for voting ");
                     String psw = (String) inputStream.readObject();
 
-                    if (checkUser(userName, psw)) {
+                    if (checkID(userName, psw)) {
                         objectOut.writeBoolean(true);
                         objectOut.writeObject("You have access!");
                         protocolElGamalClient(inputStream);
@@ -137,7 +132,7 @@ public class SocketHandler extends Thread {
         for (int i = 0; i < size; i++) {
             encoded[i] = (byte) (tempName[i] ^ tempFC[i]);
         }
-        if (mapAuthStart.containsKey(Utils.toHex(encoded))) {
+        if (mapDatabaseUA.containsKey(Utils.toHex(encoded))) {
             this.key = Utils.toHex(encoded);
             return true;
         } else {
@@ -145,7 +140,7 @@ public class SocketHandler extends Thread {
         }
     }
 
-    private boolean checkUser(String userName, String psw) throws Exception {
+    private boolean checkID(String userName, String psw) throws Exception {
         MessageDigest hash = MessageDigest.getInstance("SHA-256");
 
         hash.update(Utils.toByteArray(userName));
@@ -163,7 +158,7 @@ public class SocketHandler extends Thread {
             encoded[i] = (byte) (tempName[i] ^ tempPsw[i]);
         }
         
-        IdVoter = mapAuthStart.get(key);
+        IdVoter = mapDatabaseUA.get(key);
         
         if (IdVoter.compareToIgnoreCase(Utils.toHex(encoded)) == 0) {
             return true;
@@ -179,7 +174,7 @@ public class SocketHandler extends Thread {
             BigInteger g = (BigInteger) inputStream.readObject();
             BigInteger h = (BigInteger) inputStream.readObject();
             String pkv = new String(p + " " + q + " " + g + " " + h);
-            mapAuthFinish.put(IdVoter, pkv);
+            mapDatabaseId_Pkv.put(IdVoter, pkv);
         } catch (IOException ex) {
             Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
@@ -190,8 +185,8 @@ public class SocketHandler extends Thread {
     }
 
     private void updateMapAuthFinish() {
-        try ( BufferedWriter out = new BufferedWriter(new FileWriter("authFinish.txt"))) {
-            for (Map.Entry<String, String> x : mapAuthFinish.entrySet()) {
+        try ( BufferedWriter out = new BufferedWriter(new FileWriter("databaseId_Pkv.txt"))) {
+            for (Map.Entry<String, String> x : mapDatabaseId_Pkv.entrySet()) {
                 out.write(
                         x.getKey() + " "
                         + x.getValue() + "\n"
