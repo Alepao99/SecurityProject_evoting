@@ -1,12 +1,12 @@
 /*
- * SocketListener.java
+ * SocketListenerVoting.java
  * Author: Williams Wang
  * Last Edit: 8/20/2020 by why
  *
  * This class is a listener socket listener. Every ssl socket
- * will be assigned to a new thread called SocketHandler.
+ * will be assigned to a new thread called SocketHandlerVoting.
  */
-package it.unisa.securityteam.fasetwo;
+package it.unisa.securityteam.project;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -21,7 +21,7 @@ import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 
-public class SocketListener {
+public class SocketListenerVoting {
 
     /**
      * main - listen a specific port. When receiving socket, start a new thread
@@ -45,7 +45,7 @@ public class SocketListener {
                 map.put(sc.next(), sc.next());
             }
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SocketHandlerVoting.class.getName()).log(Level.SEVERE, null, ex);
         }
         return map;
     }
@@ -63,7 +63,7 @@ public class SocketListener {
                     Thread.sleep(timeStopVoting);
                     stateRunning = false;
                 } catch (InterruptedException ex) {
-                    Logger.getLogger(SocketListener.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(SocketListenerVoting.class.getName()).log(Level.SEVERE, null, ex);
                 }
 
             }
@@ -100,8 +100,8 @@ public class SocketListener {
             while (isStateRunning()) {
                 sslsocket = (SSLSocket) sslserversocket.accept();
                 System.out.println("sslsocket:" + sslsocket);
-                //new SocketHandler(sslsocket, mapDatabaseUA, mapDatabaseId_Pkv);
-                new SocketHandler(sslsocket);
+                //new SocketHandlerVoting(sslsocket, mapDatabaseUA, mapDatabaseId_Pkv);
+                new SocketHandlerVoting(sslsocket);
             }
             System.out.println("Tempo scaduto");
         } catch (Exception e) {

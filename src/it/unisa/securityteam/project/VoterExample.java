@@ -2,11 +2,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
  */
-package it.unisa.securityteam.fasetwo;
+package it.unisa.securityteam.project;
 
-import it.unisa.securityteam.utility.SchnorrSig;
-import it.unisa.securityteam.utility.*;
-import static it.unisa.securityteam.utility.ElGamal.*;
+import static it.unisa.securityteam.project.ElGamal.*;
 
 
 import java.io.ByteArrayInputStream;

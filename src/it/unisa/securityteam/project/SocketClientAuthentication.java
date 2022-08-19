@@ -1,5 +1,5 @@
 /*
- * SocketClient.java
+ * SocketClientAuthentication.java
  * Author: Williams Wang
  * Last Edit: 8/20/2020 by why
  * 
@@ -7,10 +7,9 @@
  * With both main() function and sendSocket() function, it can send a socket either from console
  * or inside programs. The return or output from the functions are the response from the socket.
  */
-package it.unisa.securityteam.faseone;
+package it.unisa.securityteam.project;
 
-import it.unisa.securityteam.utility.ElGamalSK;
-import static it.unisa.securityteam.utility.ElGamal.Setup;
+import static it.unisa.securityteam.project.ElGamal.Setup;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -26,7 +25,7 @@ import java.util.logging.Logger;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
-public class SocketClient {
+public class SocketClientAuthentication {
 
     /**
      * main - send a socket from system command
@@ -56,7 +55,7 @@ public class SocketClient {
 
             //protocol(args[0], Integer.parseInt(args[1]));
         } catch (IOException ex) {
-            Logger.getLogger(SocketClient.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SocketClientAuthentication.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -110,7 +109,7 @@ public class SocketClient {
                 System.err.println((String) inputStream.readObject());
             }
         } catch (Exception ex) {
-            Logger.getLogger(SocketClient.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SocketClientAuthentication.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
                 out.close();
@@ -118,7 +117,7 @@ public class SocketClient {
                 sslsocket.close();
                 System.out.println("Session close");
             } catch (IOException ex) {
-                Logger.getLogger(SocketClient.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(SocketClientAuthentication.class.getName()).log(Level.SEVERE, null, ex);
             }
 
         }
@@ -133,7 +132,7 @@ public class SocketClient {
             objectOut.writeObject(SK.getPK().getG());
             objectOut.writeObject(SK.getPK().getH());
         } catch (IOException ex) {
-            Logger.getLogger(SocketClient.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SocketClientAuthentication.class.getName()).log(Level.SEVERE, null, ex);
         }
         //writeFile(map, "ClientElgamal" + sslsocket.getLocalPort() + ".txt");
         writeFile(SK, "ClientElGamal");
@@ -148,9 +147,9 @@ public class SocketClient {
             byte[] input = bos1.toByteArray();
             out.writeObject(input);
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(SocketClient.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SocketClientAuthentication.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(SocketClient.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SocketClientAuthentication.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

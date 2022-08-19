@@ -1,4 +1,4 @@
-package it.unisa.securityteam.utility;
+package it.unisa.securityteam.project;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;

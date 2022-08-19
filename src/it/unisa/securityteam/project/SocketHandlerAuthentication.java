@@ -1,13 +1,12 @@
 /*
- * SocketHandler.java
+ * SocketHandlerAuthentication.java
  * Author: Williams Wang
  * Last Edit: 8/20/2020 by why
  * 
  * A Thread to deal with socket messages.
  */
-package it.unisa.securityteam.faseone;
+package it.unisa.securityteam.project;
 
-import it.unisa.securityteam.utility.Utils;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -23,7 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLSocket;
 
-public class SocketHandler extends Thread {
+public class SocketHandlerAuthentication extends Thread {
 
     private final int size = 32;
 
@@ -38,7 +37,7 @@ public class SocketHandler extends Thread {
      *
      * @param s - an ssl socket created by SocketListener
      */
-    public SocketHandler(SSLSocket sslsocket, HashMap<String, String> mapDatabaseUA, HashMap<String, String> mapDatabaseId_Pkv) {
+    public SocketHandlerAuthentication(SSLSocket sslsocket, HashMap<String, String> mapDatabaseUA, HashMap<String, String> mapDatabaseId_Pkv) {
         this.sslsocket = sslsocket;
         this.mapDatabaseUA = mapDatabaseUA;
         this.mapDatabaseId_Pkv = mapDatabaseId_Pkv;
@@ -103,7 +102,7 @@ public class SocketHandler extends Thread {
                 objectOut.writeObject("User not present in database");
             }
         } catch (Exception ex) {
-            Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SocketHandlerAuthentication.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
                 out.close();
@@ -111,7 +110,7 @@ public class SocketHandler extends Thread {
                 sslsocket.close();
                 System.out.println("Session " + sslsocket + " close");
             } catch (IOException ex) {
-                Logger.getLogger(SocketClient.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(SocketClientAuthentication.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -177,9 +176,9 @@ public class SocketHandler extends Thread {
             String pkv = new String(p + " " + q + " " + g + " " + h);
             mapDatabaseId_Pkv.put(IdVoter, pkv);
         } catch (IOException ex) {
-            Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SocketHandlerAuthentication.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SocketHandlerAuthentication.class.getName()).log(Level.SEVERE, null, ex);
         }
         updateMapAuthFinish();
 

@@ -1,11 +1,11 @@
 /*
- * SocketHandler.java
+ * SocketHandlerVoting.java
  * Author: Williams Wang
  * Last Edit: 8/20/2020 by why
  * 
  * A Thread to deal with socket messages.
  */
-package it.unisa.securityteam.fasetwo;
+package it.unisa.securityteam.project;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLSocket;
 
-public class SocketHandler extends Thread {
+public class SocketHandlerVoting extends Thread {
 
     // private final int size = 32;
     private SSLSocket sslsocket = null;
@@ -30,7 +30,7 @@ public class SocketHandler extends Thread {
      *
      * @param s - an ssl socket created by SocketListener
      */
-    /* public SocketHandler(SSLSocket sslsocket, HashMap<String, String> mapDatabaseUA, HashMap<String, String> mapDatabaseId_Pkv) {
+    /* public SocketHandlerVoting(SSLSocket sslsocket, HashMap<String, String> mapDatabaseUA, HashMap<String, String> mapDatabaseId_Pkv) {
         this.sslsocket = sslsocket;
         this.mapDatabaseUA = mapDatabaseUA;
         this.mapDatabaseId_Pkv = mapDatabaseId_Pkv;
@@ -41,7 +41,7 @@ public class SocketHandler extends Thread {
         }
     }
      */
-    public SocketHandler(SSLSocket sslsocket) {
+    public SocketHandlerVoting(SSLSocket sslsocket) {
         this.sslsocket = sslsocket;
         try {
             start();
@@ -77,7 +77,7 @@ public class SocketHandler extends Thread {
             userName = (String) inputStream.readObject();
 
         } catch (Exception ex) {
-            Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SocketHandlerVoting.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
                 out.close();
@@ -85,7 +85,7 @@ public class SocketHandler extends Thread {
                 sslsocket.close();
                 System.out.println("Session " + sslsocket + " close");
             } catch (IOException ex) {
-                Logger.getLogger(SocketClient.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(SocketClientVoting.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }

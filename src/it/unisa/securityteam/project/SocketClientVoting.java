@@ -1,5 +1,5 @@
 /*
- * SocketClient.java
+ * SocketClientVoting.java
  * Author: Williams Wang
  * Last Edit: 8/20/2020 by why
  * 
@@ -7,9 +7,8 @@
  * With both main() function and sendSocket() function, it can send a socket either from console
  * or inside programs. The return or output from the functions are the response from the socket.
  */
-package it.unisa.securityteam.fasetwo;
+package it.unisa.securityteam.project;
 
-import it.unisa.securityteam.utility.*;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
@@ -26,7 +25,7 @@ import java.util.logging.Logger;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
-public class SocketClient {
+public class SocketClientVoting {
 
     private static void readElGamal(String filename) {
         try ( ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(new FileInputStream(filename)))) {
@@ -36,9 +35,9 @@ public class SocketClient {
             inT = new ObjectInputStream(bis);
             SK = (ElGamalSK) inT.readObject();
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(SocketClient.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SocketClientVoting.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException | ClassNotFoundException ex) {
-            Logger.getLogger(SocketClient.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SocketClientVoting.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -75,7 +74,7 @@ public class SocketClient {
 
             //protocol(args[0], Integer.parseInt(args[1]));
         } catch (IOException ex) {
-            Logger.getLogger(SocketClient.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SocketClientVoting.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -105,7 +104,7 @@ public class SocketClient {
             objectOut.writeObject(userName);
 
         } catch (Exception ex) {
-            Logger.getLogger(SocketClient.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SocketClientVoting.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
                 out.close();
@@ -113,7 +112,7 @@ public class SocketClient {
                 sslsocket.close();
                 System.out.println("Session close");
             } catch (IOException ex) {
-                Logger.getLogger(SocketClient.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(SocketClientVoting.class.getName()).log(Level.SEVERE, null, ex);
             }
 
         }
