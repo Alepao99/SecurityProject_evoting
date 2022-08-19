@@ -7,17 +7,19 @@
  * With both main() function and sendSocket() function, it can send a socket either from console
  * or inside programs. The return or output from the functions are the response from the socket.
  */
-package it.unisa.securityteam;
+package it.unisa.securityteam.faseone;
 
-import static it.unisa.securityteam.ElGamal.Setup;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
+import it.unisa.securityteam.utility.ElGamalSK;
+import static it.unisa.securityteam.utility.ElGamal.Setup;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.util.Map;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -126,28 +128,29 @@ public class SocketClient {
     private static void protocolElGamalClient(ObjectOutputStream objectOut, SSLSocket sslsocket) {
         ElGamalSK SK = Setup(64); //questioni di tempo a 64 altrienti 2048 
         try {
-            objectOut.writeObject(SK.PK.p);
-            objectOut.writeObject(SK.PK.q);
-            objectOut.writeObject(SK.PK.g);
-            objectOut.writeObject(SK.PK.h);
+            objectOut.writeObject(SK.getPK().getP());
+            objectOut.writeObject(SK.getPK().getQ());
+            objectOut.writeObject(SK.getPK().getG());
+            objectOut.writeObject(SK.getPK().getH());
         } catch (IOException ex) {
             Logger.getLogger(SocketClient.class.getName()).log(Level.SEVERE, null, ex);
         }
-        writeFile(SK, "ClientElgamal" + sslsocket.getLocalPort() + ".txt");
-
+        //writeFile(map, "ClientElgamal" + sslsocket.getLocalPort() + ".txt");
+        writeFile(SK, "ClientElGamal");
     }
 
     private static void writeFile(ElGamalSK SK, String filename) {
-        try ( BufferedWriter out = new BufferedWriter(new FileWriter(filename))) {
-            out.write(
-                    SK.PK.p + " "
-                    + SK.PK.q + " "
-                    + SK.PK.g + " "
-                    + SK.PK.h + " "
-                    + SK.s + "\n"
-            );
+        try ( ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(filename)))) {
+            ByteArrayOutputStream bos1 = new ByteArrayOutputStream();
+            ObjectOutputStream oos1 = new ObjectOutputStream(bos1);
+            oos1.writeObject(SK);
+            oos1.flush();
+            byte[] input = bos1.toByteArray();
+            out.writeObject(input);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(SocketClient.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            java.util.logging.Logger.getLogger(PreliminarySetting.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            Logger.getLogger(SocketClient.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

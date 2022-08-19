@@ -5,8 +5,9 @@
  * 
  * A Thread to deal with socket messages.
  */
-package it.unisa.securityteam;
+package it.unisa.securityteam.faseone;
 
+import it.unisa.securityteam.utility.Utils;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;

@@ -6,7 +6,7 @@
  * This class is a listener socket listener. Every ssl socket
  * will be assigned to a new thread called SocketHandler.
  */
-package it.unisa.securityteam;
+package it.unisa.securityteam.faseone;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
