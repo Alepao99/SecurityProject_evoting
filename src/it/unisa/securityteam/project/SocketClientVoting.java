@@ -1,22 +1,8 @@
-/*
- * SocketClientVoting.java
- * Author: Williams Wang
- * Last Edit: 8/20/2020 by why
- * 
- * This class is the client which can send ssl socket to SocketListener. 
- * With both main() function and sendSocket() function, it can send a socket either from console
- * or inside programs. The return or output from the functions are the response from the socket.
- */
 package it.unisa.securityteam.project;
 
 import static it.unisa.securityteam.project.ElGamal.*;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -30,19 +16,9 @@ import javax.net.ssl.SSLSocketFactory;
 
 public class SocketClientVoting {
 
-    private static void readElGamal(String filename) {
-        try ( ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(new FileInputStream(filename)))) {
-            byte[] output = (byte[]) in.readObject();
-            ByteArrayInputStream bis = new ByteArrayInputStream(output);
-            ObjectInput inT = null;
-            inT = new ObjectInputStream(bis);
-            SK = (ElGamalSK) inT.readObject();
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(SocketClientVoting.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException | ClassNotFoundException ex) {
-            Logger.getLogger(SocketClientVoting.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
+    private final static String fileClientSK = "ClientElGamal";
+    private static ElGamalSK SK;
+    private static final SecureRandom sc = new SecureRandom();
 
     /**
      * main - send a socket from system command
@@ -53,10 +29,6 @@ public class SocketClientVoting {
      *
      * @print received responses
      */
-    private final static String filename = "ClientElGamal";
-    private static ElGamalSK SK;
-    private static final SecureRandom sc = new SecureRandom();
-
     public static void main(String[] args) throws Exception {
 
         if (args.length != 2) {
@@ -72,7 +44,7 @@ public class SocketClientVoting {
             SSLSocket sslsocket = (SSLSocket) sslsocketfactory.createSocket(args[0], Integer.parseInt(args[1]));
             sslsocket.startHandshake();
             System.out.println("sslsocket=" + sslsocket);
-            readElGamal(filename);
+            SK = Utils.readSKByte(fileClientSK, SK);
             protocolCreateMsg(sslsocket);
 
             //protocol(args[0], Integer.parseInt(args[1]));
@@ -116,7 +88,7 @@ public class SocketClientVoting {
                 System.out.println(CTMsg.toString());
                 objectOut.writeObject(s);
                 objectOut.flush();
-                
+
                 if (inputStream.readBoolean()) {
                     System.out.println("Request to add vote");
                     System.out.println((String) inputStream.readObject());

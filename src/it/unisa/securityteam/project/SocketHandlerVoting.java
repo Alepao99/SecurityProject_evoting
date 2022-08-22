@@ -1,13 +1,6 @@
-/*
- * SocketHandlerVoting.java
- * Author: Williams Wang
- * Last Edit: 8/20/2020 by why
- * 
- * A Thread to deal with socket messages.
- */
 package it.unisa.securityteam.project;
 
-import static it.unisa.securityteam.project.ElGamal.Verify;
+import static it.unisa.securityteam.project.ElGamal.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -23,13 +16,12 @@ import javax.net.ssl.SSLSocket;
 
 public class SocketHandlerVoting extends Thread {
 
-    // private final int size = 32;
     private SSLSocket sslsocket = null;
     private ElGamalSK SKUA = null;
-    // private String key = null;
+
     private HashMap<String, String> mapSmartContracts;
     private HashMap<String, String> mapDatabaseId_Pkv;
-    // private String IdVoter = new String();
+
     private final String smartContracts = "smartContracts.txt";
     private final String databaseId_Pkv = "databaseId_Pkv.txt";
 
@@ -37,17 +29,6 @@ public class SocketHandlerVoting extends Thread {
      * Constructor - initialize variables
      *
      * @param s - an ssl socket created by SocketListener
-     */
-    /* public SocketHandlerVoting(SSLSocket sslsocket, HashMap<String, String> mapDatabaseUA, HashMap<String, String> mapDatabaseId_Pkv) {
-        this.sslsocket = sslsocket;
-        this.mapDatabaseUA = mapDatabaseUA;
-        this.mapDatabaseId_Pkv = mapDatabaseId_Pkv;
-        try {
-            start();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
      */
     public SocketHandlerVoting(SSLSocket sslsocket, ElGamalSK SKUA) {
         this.sslsocket = sslsocket;
@@ -59,10 +40,6 @@ public class SocketHandlerVoting extends Thread {
         }
     }
 
-    /*
-    pw serve per mandare
-    br serve per ricevere
-     */
     @Override
     public void run() {
         OutputStream out = null;
@@ -88,7 +65,7 @@ public class SocketHandlerVoting extends Thread {
                 objectOut.flush();
                 objectOut.writeObject("Choise your preference:\n1: Yes\t0: white\t-1: No");
                 objectOut.flush();
-                //fiscalCode = (String) inputStream.readObject();
+
 
                 ElGamalCT CTMsg = (ElGamalCT) inputStream.readObject();
                 SchnorrSig s = (SchnorrSig) inputStream.readObject();
@@ -123,7 +100,6 @@ public class SocketHandlerVoting extends Thread {
             }
         }
     }
-
 
     private boolean checkPKVoter(ElGamalPK PKVoter) {
         mapDatabaseId_Pkv = Utils.readFile(databaseId_Pkv);

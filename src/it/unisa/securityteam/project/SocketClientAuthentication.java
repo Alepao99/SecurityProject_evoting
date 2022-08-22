@@ -1,12 +1,3 @@
-/*
- * SocketClientAuthentication.java
- * Author: Williams Wang
- * Last Edit: 8/20/2020 by why
- * 
- * This class is the client which can send ssl socket to SocketListener. 
- * With both main() function and sendSocket() function, it can send a socket either from console
- * or inside programs. The return or output from the functions are the response from the socket.
- */
 package it.unisa.securityteam.project;
 
 import static it.unisa.securityteam.project.ElGamal.Setup;
@@ -26,6 +17,8 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 public class SocketClientAuthentication {
+
+    private static final String fileClientSK = "ClientElGamal";
 
     /**
      * main - send a socket from system command
@@ -151,24 +144,8 @@ public class SocketClientAuthentication {
         } catch (IOException ex) {
             Logger.getLogger(SocketClientAuthentication.class.getName()).log(Level.SEVERE, null, ex);
         }
-        //writeFile(map, "ClientElgamal" + sslsocket.getLocalPort() + ".txt");
-        writeFile(SK, "ClientElGamal");
-    }
 
-    private static void writeFile(ElGamalSK SK, String filename) {
-        try ( ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(filename)))) {
-            ByteArrayOutputStream bos1 = new ByteArrayOutputStream();
-            ObjectOutputStream oos1 = new ObjectOutputStream(bos1);
-            oos1.writeObject(SK);
-            oos1.flush();
-            byte[] input = bos1.toByteArray();
-            out.writeObject(input);
-            out.flush();
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(SocketClientAuthentication.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(SocketClientAuthentication.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        Utils.writeSKByte(SK, fileClientSK);
     }
 
 }

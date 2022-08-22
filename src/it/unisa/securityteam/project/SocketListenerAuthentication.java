@@ -1,11 +1,3 @@
-/*
- * SocketListenerAuthentication.java
- * Author: Williams Wang
- * Last Edit: 8/20/2020 by why
- *
- * This class is a listener socket listener. Every ssl socket
- * will be assigned to a new thread called SocketHandlerAuthentication.
- */
 package it.unisa.securityteam.project;
 
 import java.io.IOException;
@@ -29,45 +21,6 @@ public class SocketListenerAuthentication {
     private static HashMap<String, String> mapDatabaseUA;
     private static HashMap<String, String> mapDatabaseId_Pkv;
     private static boolean stateRunning;
-
-    public static void main(String[] args) throws InterruptedException {
-
-        if (System.getProperty(
-                "javax.net.ssl.keyStore") == null || System.getProperty("javax.net.ssl.keyStorePassword") == null) {
-            // set keystore store location
-            System.setProperty("javax.net.ssl.keyStore", "keystoreServerAuth");
-            System.setProperty("javax.net.ssl.keyStorePassword", "serverAuthpwd");
-        }
-        // create socket
-        SSLServerSocket sslserversocket = null;
-        SSLSocket sslsocket = null;
-        // create a listener on port 9999
-
-        try {
-            SSLServerSocketFactory sslserversocketfactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
-            sslserversocket = (SSLServerSocket) sslserversocketfactory.createServerSocket(4000);
-
-            startTime(Integer.parseInt(args[0]));
-            System.out.println("Start Server Authentication");
-            mapDatabaseUA = Utils.readFile(databaseUA);
-            mapDatabaseId_Pkv = Utils.readFile(databaseId_Pkv);
-
-            while (isStateRunning()) {
-
-                sslsocket = (SSLSocket) sslserversocket.accept();
-                System.out.println("sslsocket:" + sslsocket);
-                // assign a handler to process data
-                new SocketHandlerAuthentication(sslsocket, mapDatabaseUA, mapDatabaseId_Pkv);
-            }
-            System.out.println("Time is over");
-        } catch (Exception e) {
-            try {
-                sslsocket.close();
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
-        }
-    }
 
     private static void startTime(int timeStopVoting) throws InterruptedException {
         if (timeStopVoting < 0) {
@@ -94,4 +47,42 @@ public class SocketListenerAuthentication {
         return stateRunning;
     }
 
+    public static void main(String[] args) throws InterruptedException {
+
+        if (System.getProperty(
+                "javax.net.ssl.keyStore") == null || System.getProperty("javax.net.ssl.keyStorePassword") == null) {
+            // set keystore store location
+            System.setProperty("javax.net.ssl.keyStore", "keystoreServerAuth");
+            System.setProperty("javax.net.ssl.keyStorePassword", "serverAuthpwd");
+        }
+        // create socket
+        SSLServerSocket sslserversocket = null;
+        SSLSocket sslsocket = null;
+        // create a listener on port 4000
+
+        try {
+            SSLServerSocketFactory sslserversocketfactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+            sslserversocket = (SSLServerSocket) sslserversocketfactory.createServerSocket(4000);
+
+            startTime(Integer.parseInt(args[0]));
+            System.out.println("Start Server Authentication");
+            mapDatabaseUA = Utils.readFile(databaseUA);
+            mapDatabaseId_Pkv = Utils.readFile(databaseId_Pkv);
+
+            while (isStateRunning()) {
+
+                sslsocket = (SSLSocket) sslserversocket.accept();
+                System.out.println("sslsocket:" + sslsocket);
+                // assign a handler to process data
+                new SocketHandlerAuthentication(sslsocket, mapDatabaseUA, mapDatabaseId_Pkv);
+            }
+            System.out.println("Time is over");
+        } catch (Exception e) {
+            try {
+                sslsocket.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        }
+    }
 }

@@ -1,10 +1,3 @@
-/*
- * SocketHandlerAuthentication.java
- * Author: Williams Wang
- * Last Edit: 8/20/2020 by why
- * 
- * A Thread to deal with socket messages.
- */
 package it.unisa.securityteam.project;
 
 import java.io.BufferedWriter;
@@ -48,10 +41,6 @@ public class SocketHandlerAuthentication extends Thread {
         }
     }
 
-    /*
-    pw serve per mandare
-    br serve per ricevere
-     */
     @Override
     public void run() {
         OutputStream out = null;
@@ -65,20 +54,22 @@ public class SocketHandlerAuthentication extends Thread {
             objectOut = new ObjectOutputStream(out);
             inputStream = new ObjectInputStream(in);
 
-            String fiscalCode = "";
-            String userName = "";
-
             objectOut.writeObject("Insert Fiscal Code:");
             objectOut.flush();
 
-            fiscalCode = (String) inputStream.readObject();
+            String fiscalCode = (String) inputStream.readObject();
 
             objectOut.writeObject("Insert UserName:");
             objectOut.flush();
 
-            userName = (String) inputStream.readObject();
+            String userName = (String) inputStream.readObject();
 
-            if (checkExisting(fiscalCode, userName)) {
+            if (!checkExisting(fiscalCode, userName)) {
+                objectOut.writeBoolean(false);
+                objectOut.flush();
+                objectOut.writeObject("User not present in database");
+                objectOut.flush();
+            } else {
                 objectOut.writeBoolean(true);
                 objectOut.flush();
 
@@ -116,9 +107,6 @@ public class SocketHandlerAuthentication extends Thread {
                     }
 
                 }
-            } else {
-                objectOut.writeObject("User not present in database");
-                objectOut.flush();
             }
         } catch (Exception ex) {
             Logger.getLogger(SocketHandlerAuthentication.class.getName()).log(Level.SEVERE, null, ex);
@@ -139,14 +127,11 @@ public class SocketHandlerAuthentication extends Thread {
 
         hash.update(Utils.toByteArray(userName));
         byte[] tempName = hash.digest();
-        //String name = Utils.toHex(tempName); //sha256 Text
 
         hash.update(Utils.toByteArray(fiscalCode));
         byte[] tempFC = hash.digest();
-        //String fc = Utils.toHex(tempFC);
 
         byte encoded[] = new byte[size];
-        //System.out.println("message: " + toHex(tempName));
 
         for (int i = 0; i < size; i++) {
             encoded[i] = (byte) (tempName[i] ^ tempFC[i]);
@@ -164,14 +149,11 @@ public class SocketHandlerAuthentication extends Thread {
 
         hash.update(Utils.toByteArray(userName));
         byte[] tempName = hash.digest();
-        //String name = Utils.toHex(tempName); //sha256 Text
 
         hash.update(Utils.toByteArray(psw));
         byte[] tempPsw = hash.digest();
-        //String psw = Utils.toHex(tempPsw);
 
         byte encoded[] = new byte[size];
-        //System.out.println("message: " + toHex(tempName));
 
         for (int i = 0; i < size; i++) {
             encoded[i] = (byte) (tempName[i] ^ tempPsw[i]);
@@ -192,8 +174,8 @@ public class SocketHandlerAuthentication extends Thread {
             BigInteger q = (BigInteger) inputStream.readObject();
             BigInteger g = (BigInteger) inputStream.readObject();
             BigInteger h = (BigInteger) inputStream.readObject();
-            int sec = (Integer) inputStream.readObject();
-            mapDatabaseId_Pkv.put(IdVoter, Utils.createStringPKElGamal(new ElGamalPK(p, q, g, h, sec)));
+            int securityparameter = (Integer) inputStream.readObject();
+            mapDatabaseId_Pkv.put(IdVoter, Utils.createStringPKElGamal(new ElGamalPK(p, q, g, h, securityparameter)));
         } catch (IOException ex) {
             Logger.getLogger(SocketHandlerAuthentication.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
@@ -219,13 +201,4 @@ public class SocketHandlerAuthentication extends Thread {
     private boolean firstAccessClient() {
         return mapDatabaseId_Pkv.get(IdVoter).compareToIgnoreCase("null") == 0;
     }
-
-    private void protocolMoreAccess() {
-        /*
-        In questo caso il sistema sa che il client ha effettuato un secondo accesso perchè controlla 
-        la PKClient che sta nel text id_pkv
-        
-         */
-    }
-
 }

@@ -1,11 +1,3 @@
-/*
- * SocketListenerVoting.java
- * Author: Williams Wang
- * Last Edit: 8/20/2020 by why
- *
- * This class is a listener socket listener. Every ssl socket
- * will be assigned to a new thread called SocketHandlerVoting.
- */
 package it.unisa.securityteam.project;
 
 import static it.unisa.securityteam.project.ElGamal.DecryptInTheExponent;
@@ -31,49 +23,10 @@ public class SocketListenerVoting {
      *
      */
     private static final String smartContracts = "smartContracts.txt";
-    private static final String databaseId_Pkv = "databaseId_Pkv.txt";
     private static HashMap<String, String> mapSmartContracts;
-    private static HashMap<String, String> mapDatabaseId_Pkv;
+
     private static boolean stateRunning;
     private static ElGamalSK SKUA;
-
-    public static void main(String[] args) throws InterruptedException {
-
-        if (System.getProperty(
-                "javax.net.ssl.keyStore") == null || System.getProperty("javax.net.ssl.keyStorePassword") == null) {
-            // set keystore store location
-            System.setProperty("javax.net.ssl.keyStore", "keystoreServerVoting");
-            System.setProperty("javax.net.ssl.keyStorePassword", "serverVoting");
-        }
-        // create socket
-        SSLServerSocket sslserversocket = null;
-        SSLSocket sslsocket = null;
-        // create a listener on port 9999
-
-        try {
-            SSLServerSocketFactory sslserversocketfactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
-            sslserversocket = (SSLServerSocket) sslserversocketfactory.createServerSocket(4001);
-
-            startTime(Integer.parseInt(args[0]));
-            SKUA = Setup(64);
-            System.out.println("Start Server Voting");
-
-            while (isStateRunning()) {
-                sslsocket = (SSLSocket) sslserversocket.accept();
-                System.out.println("sslsocket:" + sslsocket);
-                new SocketHandlerVoting(sslsocket, SKUA);
-            }
-            System.out.println("Time is over");
-            protocolRecostruction();
-        } catch (Exception e) {
-            try {
-                sslsocket.close();
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
-        }
-
-    }
 
     private static void startTime(int timeStopVoting) throws InterruptedException {
         if (timeStopVoting < 0) {
@@ -100,6 +53,50 @@ public class SocketListenerVoting {
         return stateRunning;
     }
 
+    public static void main(String[] args) throws InterruptedException {
+
+        if (System.getProperty(
+                "javax.net.ssl.keyStore") == null || System.getProperty("javax.net.ssl.keyStorePassword") == null) {
+            // set keystore store location
+            System.setProperty("javax.net.ssl.keyStore", "keystoreServerVoting");
+            System.setProperty("javax.net.ssl.keyStorePassword", "serverVoting");
+        }
+        // create socket
+        SSLServerSocket sslserversocket = null;
+        SSLSocket sslsocket = null;
+        // create a listener on port 4001
+
+        try {
+            SSLServerSocketFactory sslserversocketfactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+            sslserversocket = (SSLServerSocket) sslserversocketfactory.createServerSocket(4001);
+
+            startTime(Integer.parseInt(args[0]));
+            SKUA = Setup(64);
+            System.out.println("Start Server Voting");
+
+            while (isStateRunning()) {
+                sslsocket = (SSLSocket) sslserversocket.accept();
+                System.out.println("sslsocket:" + sslsocket);
+                // assign a handler to process data
+                new SocketHandlerVoting(sslsocket, SKUA);
+            }
+            System.out.println("Time is over");
+            protocolRecostruction();
+        } catch (Exception e) {
+            try {
+                sslsocket.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        }
+
+    }
+
+    private static ElGamalCT recoveryCT(String ctmsg) {
+        String[] parts = ctmsg.split(",");
+        return new ElGamalCT(new BigInteger(parts[0]), new BigInteger(parts[1]));
+    }
+
     private static LinkedList<ElGamalCT> listValue() {
         LinkedList<ElGamalCT> list = new LinkedList<>();
         for (Map.Entry<String, String> x : mapSmartContracts.entrySet()) {
@@ -119,16 +116,9 @@ public class SocketListenerVoting {
 
     private static void protocolRecostruction() {
         mapSmartContracts = Utils.readFile(smartContracts);
-
         LinkedList<ElGamalCT> list = listValue();
-
         Utils.writeResult("Result.txt", resultVoting(list));
 
-    }
-
-    private static ElGamalCT recoveryCT(String ctmsg) {
-        String[] parts = ctmsg.split(",");
-        return new ElGamalCT(new BigInteger(parts[0]), new BigInteger(parts[1]));
     }
 
 }

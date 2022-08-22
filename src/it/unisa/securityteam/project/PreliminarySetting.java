@@ -4,18 +4,14 @@
  */
 package it.unisa.securityteam.project;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,27 +45,13 @@ public class PreliminarySetting {
             mapAuthStart.put(getKey(x.getUserName(), x.getFiscalCode()), getID(x.getUserName(), x.getPsw()));
             mapAuthFinish.put(getID(x.getUserName(), x.getPsw()), "null");
         }
-        writeFile(databaseUA, mapAuthStart);
-        writeFile(databaseId_Pkv, mapAuthFinish);
+        Utils.writeFile(databaseUA, mapAuthStart);
+        Utils.writeFile(databaseId_Pkv, mapAuthFinish);
         deleteFileContents("smartContracts.txt");
         deleteFileContents("ClientElGamal");
 
     }
 
-    private static void writeFile(String filename, Map<String, String> map) {
-
-        File file = new File(dirName, filename);
-        try ( BufferedWriter out = new BufferedWriter(new FileWriter(file))) {
-            for (Map.Entry<String, String> x : map.entrySet()) {
-                out.write(
-                        x.getKey() + " "
-                        + x.getValue() + "\n"
-                );
-            }
-        } catch (IOException ex) {
-            java.util.logging.Logger.getLogger(PreliminarySetting.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-    }
 
     private static String getKey(String userName, String fiscalCode) throws NoSuchAlgorithmException {
         MessageDigest hash = MessageDigest.getInstance("SHA-256");
