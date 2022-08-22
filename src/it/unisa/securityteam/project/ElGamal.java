@@ -1,8 +1,8 @@
 package it.unisa.securityteam.project;
 
-
 import java.math.*;
 import java.security.*;
+import java.util.LinkedList;
 
 public class ElGamal {
 
@@ -106,12 +106,12 @@ public class ElGamal {
 
     }
 
-    public static boolean Verify(ElGamalPK PK, SchnorrSig sigma, String M) {
+    public static boolean Verify(SchnorrSig sigma, ElGamalPK PK, String M) {
         // sigma is the triple (a,e,z), PK is the pair (g,h)
         BigInteger e2 = HashToBigInteger(PK, sigma.getA(), M); // e2=H(PK,a,M)
         // crucial that we use the hash computed by ourself and not the challenge e in the signature
         // actually the value e in the signature is NOT needed
-        BigInteger tmp = sigma.getA().multiply(PK.getH().modPow(e2, PK.getP()).mod(PK.getP())); // tmp=ah^e2
+        BigInteger tmp = sigma.getA().multiply(PK.getH().modPow(e2, PK.getP())).mod(PK.getP()); // tmp=ah^e2
         if (tmp.compareTo(PK.getG().modPow(sigma.getZ(), PK.getP())) == 0) // compare tmp with g^z mod p
         {
             return true;
@@ -157,22 +157,30 @@ public class ElGamal {
             System.out.println("q = " + SK.getPK().getQ());
             System.out.println("g = " + SK.getPK().getG());
 
-            BigInteger M;
-            // M=new BigInteger(SK.PK.securityparameter,sc); // Bob encrypts a random
-            // integer M - note: for security we need to guaranteee this integer to be QR
-            // modulo p. For this reason
-            M = new BigInteger("5");
-            M = M.mod(SK.getPK().getP());
+            BigInteger m1 = new BigInteger("1");
+            //String msg1 = Ts + ";" + m1;
+            //u2 vota
+            BigInteger m2 = new BigInteger("1");
+            BigInteger m3 = new BigInteger("1");
+            ElGamalCT c1 = EncryptInTheExponent(SK.getPK(), m1); // encrypt vote in CT
+            //Cifro m2
+            ElGamalCT c2 = EncryptInTheExponent(SK.getPK(), m2);
+            ElGamalCT c3 = EncryptInTheExponent(SK.getPK(), m3);
 
-            System.out.println("plaintext to encrypt with (standard) El Gamal = " + M);
+            LinkedList<ElGamalCT> list = new LinkedList<>();
+            list.add(c1);
+            list.add(c2);
+            list.add(c3);
+            ElGamalCT CTH = list.get(0);
+            for (int i = 1; i < list.size(); i++) {
+                CTH = Homomorphism(SK.getPK(), CTH, list.get(i));
+            }
 
-            ElGamalCT CT = Encrypt(SK.getPK(), M); // CT encrypts M
-
-            BigInteger D;
-            D = Decrypt(CT, SK);
-            System.out.println("decrypted plaintext with (standard) El Gamal = " + D + "\n"); // it should print the
-            // same integer as
-            // before
+            BigInteger u;
+            u = DecryptInTheExponent(CTH, SK);
+            System.out.println("decrypted plaintext with Exponential El Gamal= " + u); // it should be 38*/
+            SchnorrSig sigma = Sign(SK, CTH.getC().toString());
+            System.out.println("Verification = " + Verify(sigma, SK.getPK(), CTH.getC().toString()));
         }
 
     }

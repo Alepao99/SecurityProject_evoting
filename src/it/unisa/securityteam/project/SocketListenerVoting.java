@@ -8,13 +8,14 @@
  */
 package it.unisa.securityteam.project;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import static it.unisa.securityteam.project.ElGamal.DecryptInTheExponent;
+import static it.unisa.securityteam.project.ElGamal.Homomorphism;
+import static it.unisa.securityteam.project.ElGamal.Setup;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.HashMap;
-import java.util.Locale;
-import java.util.Scanner;
+import java.util.LinkedList;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLServerSocket;
@@ -29,25 +30,49 @@ public class SocketListenerVoting {
      * same time
      *
      */
-   // private static final String databaseUA = "databaseUA.txt";
-   // private static final String databaseId_Pkv = "databaseId_Pkv.txt";
-   // private static HashMap<String, String> mapDatabaseUA;
-   // private static HashMap<String, String> mapDatabaseId_Pkv;
+    private static final String smartContracts = "smartContracts.txt";
+    private static final String databaseId_Pkv = "databaseId_Pkv.txt";
+    private static HashMap<String, String> mapSmartContracts;
+    private static HashMap<String, String> mapDatabaseId_Pkv;
     private static boolean stateRunning;
+    private static ElGamalSK SKUA;
 
-    private static HashMap<String, String> readFile(String filename) {
-        //System.out.println("-----FILE-----");
-        HashMap<String, String> map = new HashMap<>();
-        try ( Scanner sc = new Scanner(new BufferedReader(new FileReader(filename)))) {
-            sc.useLocale(Locale.US);
-            sc.useDelimiter("\\s");
-            while (sc.hasNext()) {
-                map.put(sc.next(), sc.next());
-            }
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(SocketHandlerVoting.class.getName()).log(Level.SEVERE, null, ex);
+    public static void main(String[] args) throws InterruptedException {
+
+        if (System.getProperty(
+                "javax.net.ssl.keyStore") == null || System.getProperty("javax.net.ssl.keyStorePassword") == null) {
+            // set keystore store location
+            System.setProperty("javax.net.ssl.keyStore", "keystoreServerVoting");
+            System.setProperty("javax.net.ssl.keyStorePassword", "serverVoting");
         }
-        return map;
+        // create socket
+        SSLServerSocket sslserversocket = null;
+        SSLSocket sslsocket = null;
+        // create a listener on port 9999
+
+        try {
+            SSLServerSocketFactory sslserversocketfactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+            sslserversocket = (SSLServerSocket) sslserversocketfactory.createServerSocket(4001);
+
+            startTime(Integer.parseInt(args[0]));
+            SKUA = Setup(64);
+            System.out.println("Start Server Voting");
+
+            while (isStateRunning()) {
+                sslsocket = (SSLSocket) sslserversocket.accept();
+                System.out.println("sslsocket:" + sslsocket);
+                new SocketHandlerVoting(sslsocket, SKUA);
+            }
+            System.out.println("Time is over");
+            protocolRecostruction();
+        } catch (Exception e) {
+            try {
+                sslsocket.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        }
+
     }
 
     private static void startTime(int timeStopVoting) throws InterruptedException {
@@ -75,42 +100,35 @@ public class SocketListenerVoting {
         return stateRunning;
     }
 
-    public static void main(String[] args) throws InterruptedException {
-
-        if (System.getProperty(
-                "javax.net.ssl.keyStore") == null || System.getProperty("javax.net.ssl.keyStorePassword") == null) {
-            // set keystore store location
-            System.setProperty("javax.net.ssl.keyStore", "keystoreServerVoting");
-            System.setProperty("javax.net.ssl.keyStorePassword", "serverVoting");
+    private static LinkedList<ElGamalCT> listValue() {
+        LinkedList<ElGamalCT> list = new LinkedList<>();
+        for (Map.Entry<String, String> x : mapSmartContracts.entrySet()) {
+            String ctmsg = x.getValue();
+            list.add(recoveryCT(ctmsg));
         }
-        // create socket
-        SSLServerSocket sslserversocket = null;
-        SSLSocket sslsocket = null;
-        // create a listener on port 9999
+        return list;
+    }
 
-        try {
-            SSLServerSocketFactory sslserversocketfactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
-            sslserversocket = (SSLServerSocket) sslserversocketfactory.createServerSocket(4001);
-
-            startTime(Integer.parseInt(args[0]));
-            System.out.println("Start Server Voting");
-            //mapDatabaseUA = readFile(databaseUA);
-            //mapDatabaseId_Pkv = readFile(databaseId_Pkv);
-            
-            while (isStateRunning()) {
-                sslsocket = (SSLSocket) sslserversocket.accept();
-                System.out.println("sslsocket:" + sslsocket);
-                //new SocketHandlerVoting(sslsocket, mapDatabaseUA, mapDatabaseId_Pkv);
-                new SocketHandlerVoting(sslsocket);
-            }
-            System.out.println("Tempo scaduto");
-        } catch (Exception e) {
-            try {
-                sslsocket.close();
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
+    private static BigInteger resultVoting(LinkedList<ElGamalCT> list) {
+        ElGamalCT CTH = list.get(0);
+        for (int i = 1; i < list.size(); i++) {
+            CTH = Homomorphism(SKUA.getPK(), CTH, list.get(i));
         }
+        return DecryptInTheExponent(CTH, SKUA);
+    }
+
+    private static void protocolRecostruction() {
+        mapSmartContracts = Utils.readFile(smartContracts);
+
+        LinkedList<ElGamalCT> list = listValue();
+
+        Utils.writeResult("Result.txt", resultVoting(list));
+
+    }
+
+    private static ElGamalCT recoveryCT(String ctmsg) {
+        String[] parts = ctmsg.split(",");
+        return new ElGamalCT(new BigInteger(parts[0]), new BigInteger(parts[1]));
     }
 
 }

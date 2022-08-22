@@ -6,14 +6,18 @@ package it.unisa.securityteam.project;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -47,11 +51,13 @@ public class PreliminarySetting {
         }
         writeFile(databaseUA, mapAuthStart);
         writeFile(databaseId_Pkv, mapAuthFinish);
+        deleteFileContents("smartContracts.txt");
+        deleteFileContents("ClientElGamal");
 
     }
 
     private static void writeFile(String filename, Map<String, String> map) {
-        
+
         File file = new File(dirName, filename);
         try ( BufferedWriter out = new BufferedWriter(new FileWriter(file))) {
             for (Map.Entry<String, String> x : map.entrySet()) {
@@ -103,6 +109,22 @@ public class PreliminarySetting {
             encoded[i] = (byte) (tempName[i] ^ tempPsw[i]);
         }
         return Utils.toHex(encoded);
+    }
+
+    private static void deleteFileContents(String filename) {
+        PrintWriter writer = null;
+        try {
+            File file = new File(dirName, filename);
+            writer = new PrintWriter(file);
+            writer.print("");
+            // other operations
+            writer.close();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(PreliminarySetting.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            writer.close();
+        }
+
     }
 
 }

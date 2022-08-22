@@ -80,10 +80,12 @@ public class SocketClientAuthentication {
             System.out.println((String) inputStream.readObject());
             String fiscalCode = scanner.next();
             objectOut.writeObject(fiscalCode);
+            objectOut.flush();
 
             System.out.println((String) inputStream.readObject());
             String userName = scanner.next();
             objectOut.writeObject(userName);
+            objectOut.flush();
 
             if (inputStream.readBoolean()) {
                 int repetition = 3;
@@ -91,9 +93,14 @@ public class SocketClientAuthentication {
                     System.out.println((String) inputStream.readObject());
                     String psw = scanner.next();
                     objectOut.writeObject(psw);
+                    objectOut.flush();
+
                     if (inputStream.readBoolean()) {
                         System.out.println((String) inputStream.readObject());
-                        protocolElGamalClient(objectOut, sslsocket);
+                        //if (firstAccess())
+                        if (inputStream.readBoolean()) {
+                            protocolFirstAccess(objectOut);
+                        }
                         break;
                     }
                     repetition--;
@@ -124,13 +131,23 @@ public class SocketClientAuthentication {
 
     }
 
-    private static void protocolElGamalClient(ObjectOutputStream objectOut, SSLSocket sslsocket) {
+    private static void protocolFirstAccess(ObjectOutputStream objectOut) {
         ElGamalSK SK = Setup(64); //questioni di tempo a 64 altrienti 2048 
         try {
             objectOut.writeObject(SK.getPK().getP());
+            objectOut.flush();
+
             objectOut.writeObject(SK.getPK().getQ());
+            objectOut.flush();
+
             objectOut.writeObject(SK.getPK().getG());
+            objectOut.flush();
+
             objectOut.writeObject(SK.getPK().getH());
+            objectOut.flush();
+
+            objectOut.writeObject(SK.getPK().getSecurityparameter());
+            objectOut.flush();
         } catch (IOException ex) {
             Logger.getLogger(SocketClientAuthentication.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -146,6 +163,7 @@ public class SocketClientAuthentication {
             oos1.flush();
             byte[] input = bos1.toByteArray();
             out.writeObject(input);
+            out.flush();
         } catch (FileNotFoundException ex) {
             Logger.getLogger(SocketClientAuthentication.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {

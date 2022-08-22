@@ -69,37 +69,56 @@ public class SocketHandlerAuthentication extends Thread {
             String userName = "";
 
             objectOut.writeObject("Insert Fiscal Code:");
+            objectOut.flush();
+
             fiscalCode = (String) inputStream.readObject();
 
             objectOut.writeObject("Insert UserName:");
+            objectOut.flush();
+
             userName = (String) inputStream.readObject();
 
             if (checkExisting(fiscalCode, userName)) {
                 objectOut.writeBoolean(true);
+                objectOut.flush();
+
                 int repetition = 3;
                 while (repetition > 0) {
                     objectOut.writeObject("\nPlease insert password for voting ");
+                    objectOut.flush();
+
                     String psw = (String) inputStream.readObject();
 
                     if (checkID(userName, psw)) {
                         objectOut.writeBoolean(true);
+                        objectOut.flush();
                         objectOut.writeObject("You have access!");
-                        protocolElGamalClient(inputStream);
-                        // protocolUpdateDataAuth();
+                        objectOut.flush();
+
+                        if (firstAccessClient()) {
+                            objectOut.writeBoolean(true);
+                            objectOut.flush();
+                            protocolFirstAccess(inputStream);
+                        } else {
+                            objectOut.writeBoolean(false);
+                            objectOut.flush();
+                        }
                         break;
                     }
                     objectOut.writeBoolean(false);
                     repetition--;
                     if (repetition == 0) {
                         objectOut.writeObject("Attempts exhausted, Contact Assistance for Unlock");
-
+                        objectOut.flush();
                     } else {
                         objectOut.writeObject("Password error, You still have " + repetition + " attempts");
+                        objectOut.flush();
                     }
 
                 }
             } else {
                 objectOut.writeObject("User not present in database");
+                objectOut.flush();
             }
         } catch (Exception ex) {
             Logger.getLogger(SocketHandlerAuthentication.class.getName()).log(Level.SEVERE, null, ex);
@@ -157,24 +176,24 @@ public class SocketHandlerAuthentication extends Thread {
         for (int i = 0; i < size; i++) {
             encoded[i] = (byte) (tempName[i] ^ tempPsw[i]);
         }
-        
+
         IdVoter = mapDatabaseUA.get(key);
-        
+
         if (IdVoter.compareToIgnoreCase(Utils.toHex(encoded)) == 0) {
             return true;
         }
-        IdVoter = "";
+        IdVoter = null;
         return false;
     }
 
-    private void protocolElGamalClient(ObjectInputStream inputStream) {
+    private void protocolFirstAccess(ObjectInputStream inputStream) {
         try {
             BigInteger p = (BigInteger) inputStream.readObject();
             BigInteger q = (BigInteger) inputStream.readObject();
             BigInteger g = (BigInteger) inputStream.readObject();
             BigInteger h = (BigInteger) inputStream.readObject();
-            String pkv = new String(p + " " + q + " " + g + " " + h);
-            mapDatabaseId_Pkv.put(IdVoter, pkv);
+            int sec = (Integer) inputStream.readObject();
+            mapDatabaseId_Pkv.put(IdVoter, Utils.createStringPKElGamal(new ElGamalPK(p, q, g, h, sec)));
         } catch (IOException ex) {
             Logger.getLogger(SocketHandlerAuthentication.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
@@ -195,6 +214,18 @@ public class SocketHandlerAuthentication extends Thread {
         } catch (IOException ex) {
             java.util.logging.Logger.getLogger(PreliminarySetting.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+    }
+
+    private boolean firstAccessClient() {
+        return mapDatabaseId_Pkv.get(IdVoter).compareToIgnoreCase("null") == 0;
+    }
+
+    private void protocolMoreAccess() {
+        /*
+        In questo caso il sistema sa che il client ha effettuato un secondo accesso perchè controlla 
+        la PKClient che sta nel text id_pkv
+        
+         */
     }
 
 }

@@ -103,11 +103,12 @@ public class VoterExample{
             byte[] cipherText = new byte[cipher.getOutputSize(input.length)];
             int ctLength = cipher.update(input, 0, input.length, cipherText, 0);
             ctLength += cipher.doFinal(cipherText, ctLength);
+            SchnorrSig s1 = Sign(SK1, "ciao");
             // cipherText encrypts the byte array input under the key derived from M
-
+/*
             h.update(R2.toByteArray());
             byte[] keyBytes2 = h.digest(); // keyBytes=Hash(M)
-            SecretKeySpec key2 = new SecretKeySpec(keyBytes, "AES"); // use keyBytes to generate an AES key
+            SecretKeySpec key2 = new SecretKeySpec(keyBytes2, "AES"); // use keyBytes to generate an AES key
 
              // convert the msg string to a byte array that will be encrypted under CBC-AES
 
@@ -121,10 +122,10 @@ public class VoterExample{
             SchnorrSig s1 = Sign(SK1, toString(cipherText, ctLength));
             //Firmo utente 2
             SchnorrSig s2 = Sign(SK2, toString(cipherText2, ctLength2));
-
+*/
             //Memorizzo Pkv, C ed S dell'utente. Verifico che la firma sia corretta prendeno la pkv dal db.P
-            System.out.println("Verification = " + Verify(SK1.getPK(), s1, toString(cipherText, ctLength)));
-            System.out.println("Verification = " + Verify(SK2.getPK(), s2, toString(cipherText2, ctLength2)));
+           // System.out.println("Verification = " + Verify(SK1.getPK(), s1,"ciao"));
+           // System.out.println("Verification = " + Verify(SK2.getPK(), s2, toString(cipherText2, ctLength2)));
 
             R1 = ElGamal.Decrypt(C1K, SKUA); // decrypt M 
 

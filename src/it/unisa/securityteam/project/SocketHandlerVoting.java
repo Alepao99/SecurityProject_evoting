@@ -7,11 +7,16 @@
  */
 package it.unisa.securityteam.project;
 
+import static it.unisa.securityteam.project.ElGamal.Verify;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLSocket;
@@ -20,10 +25,13 @@ public class SocketHandlerVoting extends Thread {
 
     // private final int size = 32;
     private SSLSocket sslsocket = null;
+    private ElGamalSK SKUA = null;
     // private String key = null;
-    // private HashMap<String, String> mapDatabaseUA;
-    // private HashMap<String, String> mapDatabaseId_Pkv;
+    private HashMap<String, String> mapSmartContracts;
+    private HashMap<String, String> mapDatabaseId_Pkv;
     // private String IdVoter = new String();
+    private final String smartContracts = "smartContracts.txt";
+    private final String databaseId_Pkv = "databaseId_Pkv.txt";
 
     /**
      * Constructor - initialize variables
@@ -41,8 +49,9 @@ public class SocketHandlerVoting extends Thread {
         }
     }
      */
-    public SocketHandlerVoting(SSLSocket sslsocket) {
+    public SocketHandlerVoting(SSLSocket sslsocket, ElGamalSK SKUA) {
         this.sslsocket = sslsocket;
+        this.SKUA = SKUA;
         try {
             start();
         } catch (Exception e) {
@@ -67,14 +76,39 @@ public class SocketHandlerVoting extends Thread {
             objectOut = new ObjectOutputStream(out);
             inputStream = new ObjectInputStream(in);
 
-            String fiscalCode = "";
-            String userName = "";
+            ElGamalPK PKVoter = (ElGamalPK) inputStream.readObject();
+            if (checkPKVoter(PKVoter)) {
+                objectOut.writeBoolean(true);
+                objectOut.flush();
 
-            objectOut.writeObject("Insert Fiscal Code:");
-            fiscalCode = (String) inputStream.readObject();
+                objectOut.writeObject("The user can vote");
+                objectOut.flush();
 
-            objectOut.writeObject("Insert UserName:");
-            userName = (String) inputStream.readObject();
+                objectOut.writeObject(SKUA);
+                objectOut.flush();
+                objectOut.writeObject("Choise your preference:\n1: Yes\t0: white\t-1: No");
+                objectOut.flush();
+                //fiscalCode = (String) inputStream.readObject();
+
+                ElGamalCT CTMsg = (ElGamalCT) inputStream.readObject();
+                SchnorrSig s = (SchnorrSig) inputStream.readObject();
+                if (Verify(s, PKVoter, CTMsg.toString())) {
+                    objectOut.writeBoolean(true);
+                    objectOut.flush();
+
+                    protocolUpdateSmartContracts(PKVoter, CTMsg);
+                    objectOut.writeObject("Vote added");
+                    objectOut.flush();
+                } else {
+                    objectOut.writeBoolean(false);
+                    objectOut.flush();
+
+                }
+            } else {
+                objectOut.writeBoolean(false);
+                objectOut.writeObject("The user can not vote");
+                objectOut.flush();
+            }
 
         } catch (Exception ex) {
             Logger.getLogger(SocketHandlerVoting.class.getName()).log(Level.SEVERE, null, ex);
@@ -88,6 +122,34 @@ public class SocketHandlerVoting extends Thread {
                 Logger.getLogger(SocketClientVoting.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+
+
+    private boolean checkPKVoter(ElGamalPK PKVoter) {
+        mapDatabaseId_Pkv = Utils.readFile(databaseId_Pkv);
+        if (mapDatabaseId_Pkv.containsValue(Utils.createStringPKElGamal(PKVoter))) {
+            return true;
+        }
+        return false;
+    }
+
+    private void protocolUpdateSmartContracts(ElGamalPK PKVoter, ElGamalCT CTMsg) {
+        mapSmartContracts = Utils.readFile(smartContracts);
+        mapSmartContracts.put(Utils.createStringPKElGamal(PKVoter), Utils.createStringCTElGamal(CTMsg));
+
+        try ( BufferedWriter out = new BufferedWriter(new FileWriter(smartContracts))) {
+            for (Map.Entry<String, String> x : mapSmartContracts.entrySet()) {
+                out.write(
+                        x.getKey() + " "
+                        + x.getValue() + "\n"
+                );
+
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(SocketListenerVoting.class
+                    .getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 
 }

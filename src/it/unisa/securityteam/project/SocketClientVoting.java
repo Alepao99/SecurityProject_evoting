@@ -9,6 +9,7 @@
  */
 package it.unisa.securityteam.project;
 
+import static it.unisa.securityteam.project.ElGamal.*;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
@@ -19,6 +20,8 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,6 +55,7 @@ public class SocketClientVoting {
      */
     private final static String filename = "ClientElGamal";
     private static ElGamalSK SK;
+    private static final SecureRandom sc = new SecureRandom();
 
     public static void main(String[] args) throws Exception {
 
@@ -69,8 +73,7 @@ public class SocketClientVoting {
             sslsocket.startHandshake();
             System.out.println("sslsocket=" + sslsocket);
             readElGamal(filename);
-            System.out.println(SK.getPK().getP());
-            protocolVote(sslsocket);
+            protocolCreateMsg(sslsocket);
 
             //protocol(args[0], Integer.parseInt(args[1]));
         } catch (IOException ex) {
@@ -82,7 +85,7 @@ public class SocketClientVoting {
         System.out.println("Usage:\n\tjava client.SocketClient [address] [port]");
     }
 
-    private static void protocolVote(SSLSocket sslsocket) {
+    private static void protocolCreateMsg(SSLSocket sslsocket) {
         OutputStream out = null;
         InputStream in = null;
         ObjectOutputStream objectOut;
@@ -95,13 +98,34 @@ public class SocketClientVoting {
             inputStream = new ObjectInputStream(in);
             Scanner scanner = new Scanner(System.in);
 
-            System.out.println((String) inputStream.readObject());
-            String fiscalCode = scanner.next();
-            objectOut.writeObject(fiscalCode);
+            objectOut.writeObject(SK.getPK());
+            objectOut.flush();
 
-            System.out.println((String) inputStream.readObject());
-            String userName = scanner.next();
-            objectOut.writeObject(userName);
+            if (inputStream.readBoolean()) {
+                System.out.println((String) inputStream.readObject());
+
+                ElGamalSK SKUA = (ElGamalSK) inputStream.readObject();
+                System.out.println((String) inputStream.readObject());
+
+                BigInteger x = scanner.nextBigInteger();
+                ElGamalCT CTMsg = EncryptInTheExponent(SKUA.getPK(), x);
+                objectOut.writeObject(CTMsg);
+                objectOut.flush();
+
+                SchnorrSig s = Sign(SK, CTMsg.toString());
+                System.out.println(CTMsg.toString());
+                objectOut.writeObject(s);
+                objectOut.flush();
+                
+                if (inputStream.readBoolean()) {
+                    System.out.println("Request to add vote");
+                    System.out.println((String) inputStream.readObject());
+                } else {
+                    System.out.println("Request to add vote denied");
+                }
+            } else {
+                System.out.println((String) inputStream.readObject());
+            }
 
         } catch (Exception ex) {
             Logger.getLogger(SocketClientVoting.class.getName()).log(Level.SEVERE, null, ex);

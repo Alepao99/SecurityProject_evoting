@@ -3,7 +3,7 @@ package it.unisa.securityteam.project;
 import java.io.Serializable;
 import java.math.BigInteger;
 
-public class SchnorrSig implements Serializable{
+public class SchnorrSig implements Serializable {
 
     private BigInteger a, e, z;
 
@@ -24,5 +24,5 @@ public class SchnorrSig implements Serializable{
     public BigInteger getZ() {
         return z;
     }
-    
+
 }

@@ -37,5 +37,4 @@ public class ElGamalPK implements Serializable {
     public int getSecurityparameter() {
         return securityparameter;
     }
-    
 }
