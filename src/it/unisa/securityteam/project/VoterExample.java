@@ -50,7 +50,7 @@ public class VoterExample{
         ElGamalSK SKUA = Setup(64);
 
         //u1 vota
-        BigInteger m1 = new BigInteger("-2");
+        BigInteger m1 = new BigInteger("3");
         //String msg1 = Ts + ";" + m1;
         //u2 vota
         BigInteger m2 = new BigInteger("1");

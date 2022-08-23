@@ -163,9 +163,12 @@ public class ElGamal {
             BigInteger m2 = new BigInteger("1");
             BigInteger m3 = new BigInteger("1");
             ElGamalCT c1 = EncryptInTheExponent(SK.getPK(), m1); // encrypt vote in CT
+                           System.out.println(c1.getC());
             //Cifro m2
             ElGamalCT c2 = EncryptInTheExponent(SK.getPK(), m2);
+                           System.out.println(c2.getC());
             ElGamalCT c3 = EncryptInTheExponent(SK.getPK(), m3);
+                           System.out.println(c3.getC());
 
             LinkedList<ElGamalCT> list = new LinkedList<>();
             list.add(c1);
@@ -173,11 +176,14 @@ public class ElGamal {
             list.add(c3);
             ElGamalCT CTH = list.get(0);
             for (int i = 1; i < list.size(); i++) {
+                System.out.println(CTH.getC());
                 CTH = Homomorphism(SK.getPK(), CTH, list.get(i));
             }
-
+System.out.println("ok");
             BigInteger u;
             u = DecryptInTheExponent(CTH, SK);
+            System.out.println("ok");
+
             System.out.println("decrypted plaintext with Exponential El Gamal= " + u); // it should be 38*/
             SchnorrSig sigma = Sign(SK, CTH.getC().toString());
             System.out.println("Verification = " + Verify(SK.getPK(), sigma, CTH.getC().toString()));

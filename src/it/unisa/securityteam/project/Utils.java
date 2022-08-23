@@ -1,5 +1,6 @@
 package it.unisa.securityteam.project;
 
+import static it.unisa.securityteam.project.ElGamal.DecryptInTheExponent;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -194,6 +195,18 @@ public class Utils {
             byte[] input = bos1.toByteArray();
             out.writeObject(input);
             out.flush();
+            out.close();
+        } catch (FileNotFoundException ex) {
+            System.err.println("FileNotFoundException in writeSKByte");
+        } catch (IOException ex) {
+            System.err.println("IOException in writeSKByte");
+        }
+    }
+
+    public static void writeIDVoterByte(String IDVoter, String filename) {
+        try ( ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(filename)))) {
+            out.writeObject(IDVoter);
+            out.close();
         } catch (FileNotFoundException ex) {
             System.err.println("FileNotFoundException in writeSKByte");
         } catch (IOException ex) {
@@ -215,13 +228,64 @@ public class Utils {
             ObjectInput inT = null;
             inT = new ObjectInputStream(bis);
             SK = (ElGamalSK) inT.readObject();
+            in.close();
             return SK;
         } catch (FileNotFoundException ex) {
-            System.err.println("FileNotFoundException in readElGamal");
+            System.err.println("FileNotFoundException in readSKByte");
         } catch (IOException | ClassNotFoundException ex) {
-            System.err.println("Exception in writeSKByte");
+            System.err.println("Exception in readSKByte");
         }
         return null;
+    }
+
+    /**
+     * Read a Byte String IDVoter from a text file
+     *
+     * @param filename
+     * @param IDVoter
+     * @return
+     */
+    public static String readIDVoterByte(String filename, String IDVoter) {
+        try ( ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(new FileInputStream(filename)))) {
+            return (String) in.readObject();
+
+        } catch (FileNotFoundException ex) {
+            System.err.println("FileNotFoundException in readIDVoterByte");
+        } catch (IOException | ClassNotFoundException ex) {
+            System.err.println("Exception in readIDVoterByte");
+        }
+        return null;
+    }
+
+    /**
+     *
+     * @return Boolean
+     */
+    public static boolean firstAccessClient(HashMap<String, String> mapDatabaseId_PKvoter, String IDVoter) {
+        return mapDatabaseId_PKvoter.get(IDVoter).compareToIgnoreCase("null") == 0;
+    }
+
+    public static boolean alreadyVoting(String smartContracts, ElGamalPK PKVoter) {
+        HashMap<String, String> map = Utils.readFile(smartContracts);
+        if (map.containsKey(Utils.createStringPKElGamal(PKVoter))) {
+            return true;
+        }
+        return false;
+    }
+
+    static String voteCLient(String smartContracts, ElGamalPK PKVoter, ElGamalSK SKUA) {
+        HashMap<String, String> map = Utils.readFile(smartContracts);
+        String[] str = map.get(Utils.createStringPKElGamal(PKVoter)).split(",");
+        ElGamalCT CT = new ElGamalCT(new BigInteger(str[0]), new BigInteger(str[1]));
+        BigInteger vote = DecryptInTheExponent(CT, SKUA);
+
+        if (vote.compareTo(BigInteger.ZERO) == 1) {
+            return "Yes";
+        } else if (vote.compareTo(BigInteger.ZERO) == 0) {
+            return "White";
+        } else {
+            return "No";
+        }
     }
 
 }

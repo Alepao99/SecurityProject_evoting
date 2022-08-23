@@ -48,7 +48,8 @@ public class PreliminarySetting {
         Utils.writeFile(databaseUA, mapAuthStart);
         Utils.writeFile(databaseId_Pkv, mapAuthFinish);
         deleteFileContents("smartContracts.txt");
-        deleteFileContents("ClientElGamal");
+        deleteFileContents("ClientElGamalSK");
+        deleteFileContents("ClientElGamalID");
 
     }
 

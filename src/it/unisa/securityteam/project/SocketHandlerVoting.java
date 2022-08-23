@@ -55,36 +55,38 @@ public class SocketHandlerVoting extends Thread {
             inputStream = new ObjectInputStream(in);
 
             ElGamalPK PKVoter = (ElGamalPK) inputStream.readObject();
-            if (checkPKVoter(PKVoter)) {
+
+            String IDVoter = (String) inputStream.readObject();
+
+            if (checkPKVoter(PKVoter, IDVoter)) {
                 objectOut.writeBoolean(true);
                 objectOut.flush();
-
-                objectOut.writeObject("The user can vote");
-                objectOut.flush();
-
-                objectOut.writeObject(SKUA);
-                objectOut.flush();
-                objectOut.writeObject("Choise your preference:\n1: Yes\t0: white\t-1: No");
-                objectOut.flush();
-
-                ElGamalCT CTMsg = (ElGamalCT) inputStream.readObject();
-                SchnorrSig s = (SchnorrSig) inputStream.readObject();
-                if (Verify(PKVoter, s, CTMsg.toString())) {
+                if (Utils.alreadyVoting(smartContracts, PKVoter)) {
                     objectOut.writeBoolean(true);
                     objectOut.flush();
-
-                    protocolUpdateSmartContracts(PKVoter, CTMsg);
-                    objectOut.writeObject("Vote added");
+                    objectOut.writeObject("This user has already voted\nHis vote was\n" + Utils.voteCLient(smartContracts, PKVoter, SKUA));
                     objectOut.flush();
+                    objectOut.writeObject("Do you want to vote with a new vote?");
+                    objectOut.flush();
+                    String x = (String) inputStream.readObject();
+                    if (choise(x)) {
+                        objectOut.writeBoolean(true);
+                        protocolVoting(objectOut, inputStream, PKVoter);
+                    } else {
+                        objectOut.writeBoolean(false);
+                        objectOut.writeObject("Closure");
+                        objectOut.flush();
+                    }
                 } else {
                     objectOut.writeBoolean(false);
                     objectOut.flush();
-
+                    protocolVoting(objectOut, inputStream, PKVoter);
                 }
             } else {
                 objectOut.writeBoolean(false);
                 objectOut.writeObject("The user can not vote");
                 objectOut.flush();
+
             }
 
         } catch (Exception ex) {
@@ -101,18 +103,46 @@ public class SocketHandlerVoting extends Thread {
         }
     }
 
+    private void protocolVoting(ObjectOutputStream objectOut, ObjectInputStream inputStream, ElGamalPK PKVoter) {
+        try {
+            objectOut.writeObject("The user can vote");
+            objectOut.flush();
+
+            objectOut.writeObject(SKUA);
+            objectOut.flush();
+            objectOut.writeObject("Choise your preference:\n1: Yes\n0: white\n-1: No");
+            objectOut.flush();
+
+            ElGamalCT CTMsg = (ElGamalCT) inputStream.readObject();
+            SchnorrSig s = (SchnorrSig) inputStream.readObject();
+            if (Verify(PKVoter, s, CTMsg.toString())) {
+                objectOut.writeBoolean(true);
+                objectOut.flush();
+
+                protocolUpdateSmartContracts(PKVoter, CTMsg);
+                objectOut.writeObject("Vote added");
+                objectOut.flush();
+            } else {
+                objectOut.writeBoolean(false);
+                objectOut.flush();
+
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(SocketHandlerVoting.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(SocketHandlerVoting.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     /**
      * Check if the voter's PK is legitimate
      *
      * @param PKVoter
      * @return Boolean
      */
-    private boolean checkPKVoter(ElGamalPK PKVoter) {
+    private boolean checkPKVoter(ElGamalPK PKVoter, String IDVoter) {
         mapDatabaseId_Pkv = Utils.readFile(databaseId_Pkv);
-        if (mapDatabaseId_Pkv.containsValue(Utils.createStringPKElGamal(PKVoter))) {
-            return true;
-        }
-        return false;
+        return mapDatabaseId_Pkv.get(IDVoter).compareToIgnoreCase(Utils.createStringPKElGamal(PKVoter)) == 0;
     }
 
     /**
@@ -124,20 +154,11 @@ public class SocketHandlerVoting extends Thread {
     private void protocolUpdateSmartContracts(ElGamalPK PKVoter, ElGamalCT CTMsg) {
         mapSmartContracts = Utils.readFile(smartContracts);
         mapSmartContracts.put(Utils.createStringPKElGamal(PKVoter), Utils.createStringCTElGamal(CTMsg));
+        Utils.writeFile(smartContracts, mapSmartContracts);
+    }
 
-        try ( BufferedWriter out = new BufferedWriter(new FileWriter(smartContracts))) {
-            for (Map.Entry<String, String> x : mapSmartContracts.entrySet()) {
-                out.write(
-                        x.getKey() + " "
-                        + x.getValue() + "\n"
-                );
-
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(SocketListenerVoting.class
-                    .getName()).log(Level.SEVERE, null, ex);
-        }
-
+    private boolean choise(String x) {
+        return x.compareToIgnoreCase("yes") == 0;
     }
 
 }

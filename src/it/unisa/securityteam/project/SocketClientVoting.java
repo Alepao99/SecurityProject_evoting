@@ -16,8 +16,10 @@ import javax.net.ssl.SSLSocketFactory;
 
 public class SocketClientVoting {
 
-    private final static String fileClientSK = "ClientElGamal";
+    private final static String fileClientSK = "ClientElGamalSK";
+    private final static String fileClientID = "ClientElGamalID";
     private static ElGamalSK SK;
+    private static String IDVoter;
     private static final SecureRandom sc = new SecureRandom();
 
     /**
@@ -41,7 +43,8 @@ public class SocketClientVoting {
             sslsocket.startHandshake();
             System.out.println("sslsocket=" + sslsocket);
             SK = Utils.readSKByte(fileClientSK, SK);
-            protocolVoting(sslsocket);
+            IDVoter = Utils.readIDVoterByte(fileClientID, IDVoter);
+            protocolVote(sslsocket);
 
             //protocol(args[0], Integer.parseInt(args[1]));
         } catch (IOException ex) {
@@ -59,7 +62,7 @@ public class SocketClientVoting {
      *
      * @param sslsocket
      */
-    private static void protocolVoting(SSLSocket sslsocket) {
+    private static void protocolVote(SSLSocket sslsocket) {
         OutputStream out = null;
         InputStream in = null;
         ObjectOutputStream objectOut;
@@ -74,28 +77,24 @@ public class SocketClientVoting {
 
             objectOut.writeObject(SK.getPK());
             objectOut.flush();
+            objectOut.writeObject(IDVoter);
+            objectOut.flush();
 
             if (inputStream.readBoolean()) {
-                System.out.println((String) inputStream.readObject());
-
-                ElGamalSK SKUA = (ElGamalSK) inputStream.readObject();
-                System.out.println((String) inputStream.readObject());
-
-                BigInteger x = scanner.nextBigInteger();
-                ElGamalCT CTMsg = EncryptInTheExponent(SKUA.getPK(), x);
-                objectOut.writeObject(CTMsg);
-                objectOut.flush();
-
-                SchnorrSig s = Sign(SK, CTMsg.toString());
-                System.out.println(CTMsg.toString());
-                objectOut.writeObject(s);
-                objectOut.flush();
 
                 if (inputStream.readBoolean()) {
-                    System.out.println("Request to add vote");
                     System.out.println((String) inputStream.readObject());
+                    System.out.println((String) inputStream.readObject());
+                    String x = scanner.next();
+                    objectOut.writeObject(x);
+                    objectOut.flush();
+                    if (inputStream.readBoolean()) {
+                        protocolVoting(objectOut, inputStream, scanner);
+                    } else {
+                        System.out.println((String) inputStream.readObject());
+                    }
                 } else {
-                    System.out.println("Request to add vote denied");
+                    protocolVoting(objectOut, inputStream, scanner);
                 }
             } else {
                 System.out.println((String) inputStream.readObject());
@@ -115,6 +114,36 @@ public class SocketClientVoting {
 
         }
 
+    }
+
+    private static void protocolVoting(ObjectOutputStream objectOut, ObjectInputStream inputStream, Scanner scanner) {
+        try {
+            System.out.println((String) inputStream.readObject());
+
+            ElGamalSK SKUA = (ElGamalSK) inputStream.readObject();
+            System.out.println((String) inputStream.readObject());
+
+            BigInteger x = scanner.nextBigInteger();
+            ElGamalCT CTMsg = EncryptInTheExponent(SKUA.getPK(), x);
+            objectOut.writeObject(CTMsg);
+            objectOut.flush();
+
+            SchnorrSig s = Sign(SK, CTMsg.toString());
+            System.out.println(CTMsg.toString());
+            objectOut.writeObject(s);
+            objectOut.flush();
+
+            if (inputStream.readBoolean()) {
+                System.out.println("Request to add vote");
+                System.out.println((String) inputStream.readObject());
+            } else {
+                System.out.println("Request to add vote denied");
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(SocketClientVoting.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(SocketClientVoting.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
 }

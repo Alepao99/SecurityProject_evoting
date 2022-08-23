@@ -14,8 +14,9 @@ import javax.net.ssl.SSLSocketFactory;
 
 public class SocketClientAuthentication {
 
-    private static final String fileClientSK = "ClientElGamal";
-
+    private static final String fileClientSK = "ClientElGamalSK";
+    private static final String fileClientID = "ClientElGamalID";
+    private static String IDVoter = new String();
 /**
  * 
  * @param args
@@ -85,6 +86,7 @@ public class SocketClientAuthentication {
                     objectOut.flush();
 
                     if (inputStream.readBoolean()) {
+                        IDVoter = (String) inputStream.readObject();
                         System.out.println((String) inputStream.readObject());
                         //if (firstAccess())
                         if (inputStream.readBoolean()) {
@@ -145,7 +147,8 @@ public class SocketClientAuthentication {
             Logger.getLogger(SocketClientAuthentication.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        Utils.writeSKByte(SK, fileClientSK);
+        Utils.writeSKByte(SK,fileClientSK);
+        Utils.writeIDVoterByte(IDVoter,fileClientID);
     }
 
 }

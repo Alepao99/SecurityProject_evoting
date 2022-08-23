@@ -23,7 +23,7 @@ public class SocketHandlerAuthentication extends Thread {
     private String key = null;
     private HashMap<String, String> mapDatabaseUA;
     private HashMap<String, String> mapDatabaseId_PKvoter;
-    private String IdVoter = new String();
+    private String IDVoter = new String();
 
     /**
      * Constructor - initialize variables
@@ -85,10 +85,12 @@ public class SocketHandlerAuthentication extends Thread {
                     if (checkID(userName, psw)) {
                         objectOut.writeBoolean(true);
                         objectOut.flush();
+                        objectOut.writeObject(IDVoter);
+                        objectOut.flush();
                         objectOut.writeObject("You have access!");
                         objectOut.flush();
 
-                        if (firstAccessClient()) {
+                        if (Utils.firstAccessClient(mapDatabaseId_PKvoter, IDVoter)) {
                             objectOut.writeBoolean(true);
                             objectOut.flush();
                             protocolFirstAccess(inputStream);
@@ -179,12 +181,12 @@ public class SocketHandlerAuthentication extends Thread {
             encoded[i] = (byte) (tempName[i] ^ tempPsw[i]);
         }
 
-        IdVoter = mapDatabaseUA.get(key);
+        IDVoter = mapDatabaseUA.get(key);
 
-        if (IdVoter.compareToIgnoreCase(Utils.toHex(encoded)) == 0) {
+        if (IDVoter.compareToIgnoreCase(Utils.toHex(encoded)) == 0) {
             return true;
         }
-        IdVoter = null;
+        IDVoter = null;
         return false;
     }
 
@@ -201,7 +203,7 @@ public class SocketHandlerAuthentication extends Thread {
             BigInteger g = (BigInteger) inputStream.readObject();
             BigInteger h = (BigInteger) inputStream.readObject();
             int securityparameter = (Integer) inputStream.readObject();
-            mapDatabaseId_PKvoter.put(IdVoter, Utils.createStringPKElGamal(new ElGamalPK(p, q, g, h, securityparameter)));
+            mapDatabaseId_PKvoter.put(IDVoter, Utils.createStringPKElGamal(new ElGamalPK(p, q, g, h, securityparameter)));
         } catch (IOException ex) {
             Logger.getLogger(SocketHandlerAuthentication.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
@@ -227,11 +229,5 @@ public class SocketHandlerAuthentication extends Thread {
         }
     }
 
-    /**
-     * 
-     * @return Boolean
-     */
-    private boolean firstAccessClient() {
-        return mapDatabaseId_PKvoter.get(IdVoter).compareToIgnoreCase("null") == 0;
-    }
+
 }
