@@ -1,2 +1,2 @@
-The yes won the referendum.
-Result: 2 yes
+The no won the referendum.
+Result: 1 no

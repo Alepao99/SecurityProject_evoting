@@ -84,8 +84,9 @@ public class ElGamal {
         BigInteger res = tmp.multiply(CT.getC()).mod(SK.getPK().getP());
         // after this step res=g^d for some d in 1,...,q
 
-        BigInteger M = new BigInteger("0");
+        BigInteger M = new BigInteger("-100"); //Da modificare se vogliamo prendere più voti negativi, Inutile in questa applicazione
         while (true) {
+            
             if (SK.getPK().getG().modPow(M, SK.getPK().getP()).compareTo(res) == 0) {
                 return M;
             }
@@ -157,11 +158,11 @@ public class ElGamal {
             System.out.println("q = " + SK.getPK().getQ());
             System.out.println("g = " + SK.getPK().getG());
 
-            BigInteger m1 = new BigInteger("-10");
+            BigInteger m1 = new BigInteger("-50");
             //String msg1 = Ts + ";" + m1;
             //u2 vota
             BigInteger m2 = new BigInteger("1");
-            BigInteger m3 = new BigInteger("1");
+            BigInteger m3 = new BigInteger("-1");
             ElGamalCT c1 = EncryptInTheExponent(SK.getPK(), m1); // encrypt vote in CT
                            System.out.println(c1.getC());
             //Cifro m2
@@ -169,7 +170,7 @@ public class ElGamal {
                            System.out.println(c2.getC());
             ElGamalCT c3 = EncryptInTheExponent(SK.getPK(), m3);
                            System.out.println(c3.getC());
-
+                   System.out.println(DecryptInTheExponent(c3,SK));
             LinkedList<ElGamalCT> list = new LinkedList<>();
             list.add(c1);
             list.add(c2);

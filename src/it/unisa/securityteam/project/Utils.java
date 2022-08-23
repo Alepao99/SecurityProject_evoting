@@ -168,12 +168,12 @@ public class Utils {
         File file = new File(dirName, filename);
         try ( BufferedWriter out = new BufferedWriter(new FileWriter(file))) {
             if (resultVoting.compareTo(BigInteger.ZERO) == 1) {
-                out.write("The yes won the referendum.\nResult: " + resultVoting.toString() + " yes");
+                out.write("The yes won the referendum.\nNumber of yes: " + resultVoting.toString());
             } else if (resultVoting.compareTo(BigInteger.ZERO) == 0) {
                 out.write("The referendum did not have a majority\n + Result: " + resultVoting.toString());
             } else {
 
-                out.write("The no won the referendum.\nResult: " + resultVoting.abs().toString() + " no");
+                out.write("The no won the referendum.\nNumber of no: " + resultVoting.abs().toString());
             }
         } catch (IOException ex) {
             System.err.println("Error in writeFileResult");
