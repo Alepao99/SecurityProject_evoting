@@ -22,18 +22,20 @@ public class SocketHandlerAuthentication extends Thread {
     private SSLSocket sslsocket = null;
     private String key = null;
     private HashMap<String, String> mapDatabaseUA;
-    private HashMap<String, String> mapDatabaseId_Pkv;
+    private HashMap<String, String> mapDatabaseId_PKvoter;
     private String IdVoter = new String();
 
     /**
      * Constructor - initialize variables
      *
-     * @param s - an ssl socket created by SocketListener
+     * @param sslsocket
+     * @param mapDatabaseUA
+     * @param mapDatabaseId_PKvoter
      */
-    public SocketHandlerAuthentication(SSLSocket sslsocket, HashMap<String, String> mapDatabaseUA, HashMap<String, String> mapDatabaseId_Pkv) {
+    public SocketHandlerAuthentication(SSLSocket sslsocket, HashMap<String, String> mapDatabaseUA, HashMap<String, String> mapDatabaseId_PKvoter) {
         this.sslsocket = sslsocket;
         this.mapDatabaseUA = mapDatabaseUA;
-        this.mapDatabaseId_Pkv = mapDatabaseId_Pkv;
+        this.mapDatabaseId_PKvoter = mapDatabaseId_PKvoter;
         try {
             start();
         } catch (Exception e) {
@@ -122,6 +124,15 @@ public class SocketHandlerAuthentication extends Thread {
         }
     }
 
+    /**
+     * Check the client input data. Check key map Authenticator exist.
+     *
+     * @param fiscalCode
+     * @param userName
+     * @return Boolean
+     * @throws Exception *
+     *
+     */
     private boolean checkExisting(String fiscalCode, String userName) throws Exception {
         MessageDigest hash = MessageDigest.getInstance("SHA-256");
 
@@ -144,6 +155,15 @@ public class SocketHandlerAuthentication extends Thread {
         }
     }
 
+    /**
+     *
+     * Check the client input data. Check value-Id map Authenticator
+     *
+     * @param userName
+     * @param psw
+     * @return Boolean
+     * @throws Exception
+     */
     private boolean checkID(String userName, String psw) throws Exception {
         MessageDigest hash = MessageDigest.getInstance("SHA-256");
 
@@ -168,6 +188,12 @@ public class SocketHandlerAuthentication extends Thread {
         return false;
     }
 
+    /**
+     *
+     * It takes the voter's PK and stores it in the Id_PK map
+     *
+     * @param inputStream
+     */
     private void protocolFirstAccess(ObjectInputStream inputStream) {
         try {
             BigInteger p = (BigInteger) inputStream.readObject();
@@ -175,7 +201,7 @@ public class SocketHandlerAuthentication extends Thread {
             BigInteger g = (BigInteger) inputStream.readObject();
             BigInteger h = (BigInteger) inputStream.readObject();
             int securityparameter = (Integer) inputStream.readObject();
-            mapDatabaseId_Pkv.put(IdVoter, Utils.createStringPKElGamal(new ElGamalPK(p, q, g, h, securityparameter)));
+            mapDatabaseId_PKvoter.put(IdVoter, Utils.createStringPKElGamal(new ElGamalPK(p, q, g, h, securityparameter)));
         } catch (IOException ex) {
             Logger.getLogger(SocketHandlerAuthentication.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
@@ -185,9 +211,12 @@ public class SocketHandlerAuthentication extends Thread {
 
     }
 
+    /**
+     * Update the logged in customer file. Stores the customer's ID and PK
+     */
     private void updateMapAuthFinish() {
         try ( BufferedWriter out = new BufferedWriter(new FileWriter("databaseId_Pkv.txt"))) {
-            for (Map.Entry<String, String> x : mapDatabaseId_Pkv.entrySet()) {
+            for (Map.Entry<String, String> x : mapDatabaseId_PKvoter.entrySet()) {
                 out.write(
                         x.getKey() + " "
                         + x.getValue() + "\n"
@@ -198,7 +227,11 @@ public class SocketHandlerAuthentication extends Thread {
         }
     }
 
+    /**
+     * 
+     * @return Boolean
+     */
     private boolean firstAccessClient() {
-        return mapDatabaseId_Pkv.get(IdVoter).compareToIgnoreCase("null") == 0;
+        return mapDatabaseId_PKvoter.get(IdVoter).compareToIgnoreCase("null") == 0;
     }
 }

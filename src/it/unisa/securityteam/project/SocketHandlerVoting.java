@@ -28,7 +28,8 @@ public class SocketHandlerVoting extends Thread {
     /**
      * Constructor - initialize variables
      *
-     * @param s - an ssl socket created by SocketListener
+     * @param sslsocket
+     * @param SKUA
      */
     public SocketHandlerVoting(SSLSocket sslsocket, ElGamalSK SKUA) {
         this.sslsocket = sslsocket;
@@ -66,10 +67,9 @@ public class SocketHandlerVoting extends Thread {
                 objectOut.writeObject("Choise your preference:\n1: Yes\t0: white\t-1: No");
                 objectOut.flush();
 
-
                 ElGamalCT CTMsg = (ElGamalCT) inputStream.readObject();
                 SchnorrSig s = (SchnorrSig) inputStream.readObject();
-                if (Verify(s, PKVoter, CTMsg.toString())) {
+                if (Verify(PKVoter, s, CTMsg.toString())) {
                     objectOut.writeBoolean(true);
                     objectOut.flush();
 
@@ -101,6 +101,12 @@ public class SocketHandlerVoting extends Thread {
         }
     }
 
+    /**
+     * Check if the voter's PK is legitimate
+     *
+     * @param PKVoter
+     * @return Boolean
+     */
     private boolean checkPKVoter(ElGamalPK PKVoter) {
         mapDatabaseId_Pkv = Utils.readFile(databaseId_Pkv);
         if (mapDatabaseId_Pkv.containsValue(Utils.createStringPKElGamal(PKVoter))) {
@@ -109,6 +115,12 @@ public class SocketHandlerVoting extends Thread {
         return false;
     }
 
+    /**
+     * Smart contract map update
+     *
+     * @param PKVoter
+     * @param CTMsg
+     */
     private void protocolUpdateSmartContracts(ElGamalPK PKVoter, ElGamalCT CTMsg) {
         mapSmartContracts = Utils.readFile(smartContracts);
         mapSmartContracts.put(Utils.createStringPKElGamal(PKVoter), Utils.createStringCTElGamal(CTMsg));

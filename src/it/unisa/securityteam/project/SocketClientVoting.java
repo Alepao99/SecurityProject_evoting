@@ -21,13 +21,9 @@ public class SocketClientVoting {
     private static final SecureRandom sc = new SecureRandom();
 
     /**
-     * main - send a socket from system command
      *
-     * @param args[0] target address
-     * @param args[1] target port
-     * @param args[2] message
-     *
-     * @print received responses
+     * @param args
+     * @throws Exception
      */
     public static void main(String[] args) throws Exception {
 
@@ -45,7 +41,7 @@ public class SocketClientVoting {
             sslsocket.startHandshake();
             System.out.println("sslsocket=" + sslsocket);
             SK = Utils.readSKByte(fileClientSK, SK);
-            protocolCreateMsg(sslsocket);
+            protocolVoting(sslsocket);
 
             //protocol(args[0], Integer.parseInt(args[1]));
         } catch (IOException ex) {
@@ -57,7 +53,13 @@ public class SocketClientVoting {
         System.out.println("Usage:\n\tjava client.SocketClient [address] [port]");
     }
 
-    private static void protocolCreateMsg(SSLSocket sslsocket) {
+    /**
+     *
+     * Client Voting Execution Protocol
+     *
+     * @param sslsocket
+     */
+    private static void protocolVoting(SSLSocket sslsocket) {
         OutputStream out = null;
         InputStream in = null;
         ObjectOutputStream objectOut;

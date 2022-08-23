@@ -24,8 +24,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
@@ -139,14 +137,32 @@ public class Utils {
         return map;
     }
 
+    /**
+     * Create string ElGamalPK for write it in a text file
+     *
+     * @param PK
+     * @return String
+     */
     public static String createStringPKElGamal(ElGamalPK PK) {
         return new String(PK.getP() + "," + PK.getQ() + "," + PK.getG() + "," + PK.getH());
     }
 
+    /**
+     * Create string ElGamalCT for write it in a text file
+     *
+     * @param CT
+     * @return String
+     */
     public static String createStringCTElGamal(ElGamalCT CT) {
         return new String(CT.getC() + "," + CT.getC2());
     }
 
+    /**
+     * Write the final result in a filename
+     *
+     * @param filename
+     * @param resultVoting
+     */
     public static void writeResult(String filename, BigInteger resultVoting) {
         File file = new File(dirName, filename);
         try ( BufferedWriter out = new BufferedWriter(new FileWriter(file))) {
@@ -163,6 +179,12 @@ public class Utils {
         }
     }
 
+    /**
+     * Write in Byte format ElGamalSK e write it in a text file
+     *
+     * @param SK
+     * @param filename
+     */
     public static void writeSKByte(ElGamalSK SK, String filename) {
         try ( ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(filename)))) {
             ByteArrayOutputStream bos1 = new ByteArrayOutputStream();
@@ -179,6 +201,13 @@ public class Utils {
         }
     }
 
+    /**
+     * Read a Byte ElGamalSK from a text file
+     *
+     * @param filename
+     * @param SK
+     * @return ElGamalSK
+     */
     public static ElGamalSK readSKByte(String filename, ElGamalSK SK) {
         try ( ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(new FileInputStream(filename)))) {
             byte[] output = (byte[]) in.readObject();

@@ -1,10 +1,6 @@
 package it.unisa.securityteam.project;
 
 import static it.unisa.securityteam.project.ElGamal.Setup;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -20,15 +16,11 @@ public class SocketClientAuthentication {
 
     private static final String fileClientSK = "ClientElGamal";
 
-    /**
-     * main - send a socket from system command
-     *
-     * @param args[0] target address
-     * @param args[1] target port
-     * @param args[2] message
-     *
-     * @print received responses
-     */
+/**
+ * 
+ * @param args
+ * @throws Exception 
+ */
     public static void main(String[] args) throws Exception {
 
         if (args.length != 2) {
@@ -56,6 +48,10 @@ public class SocketClientAuthentication {
         System.out.println("Usage:\n\tjava client.SocketClient [address] [port]");
     }
 
+    /**
+     * Communication protocol with the authentication server
+     * @param sslsocket 
+     */
     private static void protocolAuth(SSLSocket sslsocket) {
         OutputStream out = null;
         InputStream in = null;
@@ -124,6 +120,10 @@ public class SocketClientAuthentication {
 
     }
 
+    /**
+     * 
+     * @param objectOut 
+     */
     private static void protocolFirstAccess(ObjectOutputStream objectOut) {
         ElGamalSK SK = Setup(64); //questioni di tempo a 64 altrienti 2048 
         try {

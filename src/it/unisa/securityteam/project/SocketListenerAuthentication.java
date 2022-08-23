@@ -10,18 +10,19 @@ import javax.net.ssl.SSLSocket;
 
 public class SocketListenerAuthentication {
 
-    /**
-     * main - listen a specific port. When receiving socket, start a new thread
-     * to process data so that the program can process multiple socket at the
-     * same time
-     *
-     */
     private static final String databaseUA = "databaseUA.txt";
-    private static final String databaseId_Pkv = "databaseId_Pkv.txt";
+    private static final String databaseId_PKVoter = "databaseId_Pkv.txt";
     private static HashMap<String, String> mapDatabaseUA;
-    private static HashMap<String, String> mapDatabaseId_Pkv;
+    private static HashMap<String, String> mapDatabaseId_PKVoter;
     private static boolean stateRunning;
 
+    /**
+     * This function launches a thread that, based on the timeStopVooting value,
+     * stops the server authentication request.
+     *
+     * @param timeStopVoting
+     * @throws InterruptedException
+     */
     private static void startTime(int timeStopVoting) throws InterruptedException {
         if (timeStopVoting < 0) {
             return;
@@ -43,10 +44,23 @@ public class SocketListenerAuthentication {
         t.start();
     }
 
+    /**
+     *
+     * @return Boolean
+     */
     private static boolean isStateRunning() {
         return stateRunning;
     }
 
+    /**
+     *
+     * Main - listen a specific port. When receiving socket, start a new thread
+     * to process data so that the program can process multiple socket at the
+     * same time
+     *
+     * @param args
+     * @throws InterruptedException
+     */
     public static void main(String[] args) throws InterruptedException {
 
         if (System.getProperty(
@@ -67,14 +81,14 @@ public class SocketListenerAuthentication {
             startTime(Integer.parseInt(args[0]));
             System.out.println("Start Server Authentication");
             mapDatabaseUA = Utils.readFile(databaseUA);
-            mapDatabaseId_Pkv = Utils.readFile(databaseId_Pkv);
+            mapDatabaseId_PKVoter = Utils.readFile(databaseId_PKVoter);
 
             while (isStateRunning()) {
 
                 sslsocket = (SSLSocket) sslserversocket.accept();
                 System.out.println("sslsocket:" + sslsocket);
                 // assign a handler to process data
-                new SocketHandlerAuthentication(sslsocket, mapDatabaseUA, mapDatabaseId_Pkv);
+                new SocketHandlerAuthentication(sslsocket, mapDatabaseUA, mapDatabaseId_PKVoter);
             }
             System.out.println("Time is over");
         } catch (Exception e) {

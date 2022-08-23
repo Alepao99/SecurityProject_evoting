@@ -16,18 +16,20 @@ import javax.net.ssl.SSLSocket;
 
 public class SocketListenerVoting {
 
-    /**
-     * main - listen a specific port. When receiving socket, start a new thread
-     * to process data so that the program can process multiple socket at the
-     * same time
-     *
-     */
     private static final String smartContracts = "smartContracts.txt";
     private static HashMap<String, String> mapSmartContracts;
 
     private static boolean stateRunning;
     private static ElGamalSK SKUA;
 
+    /**
+     *
+     * This function launches a thread that, based on the timeStopVooting value,
+     * stops the server authentication request.
+     *
+     * @param timeStopVoting
+     * @throws InterruptedException
+     */
     private static void startTime(int timeStopVoting) throws InterruptedException {
         if (timeStopVoting < 0) {
             return;
@@ -49,10 +51,23 @@ public class SocketListenerVoting {
         t.start();
     }
 
+    /**
+     *
+     * @return Boolean
+     */
     private static boolean isStateRunning() {
         return stateRunning;
     }
 
+    /**
+     *
+     * Main - listen a specific port. When receiving socket, start a new thread
+     * to process data so that the program can process multiple socket at the
+     * same time
+     *
+     * @param args
+     * @throws InterruptedException
+     */
     public static void main(String[] args) throws InterruptedException {
 
         if (System.getProperty(

@@ -106,7 +106,7 @@ public class ElGamal {
 
     }
 
-    public static boolean Verify(SchnorrSig sigma, ElGamalPK PK, String M) {
+    public static boolean Verify(ElGamalPK PK, SchnorrSig sigma, String M) {
         // sigma is the triple (a,e,z), PK is the pair (g,h)
         BigInteger e2 = HashToBigInteger(PK, sigma.getA(), M); // e2=H(PK,a,M)
         // crucial that we use the hash computed by ourself and not the challenge e in the signature
@@ -157,7 +157,7 @@ public class ElGamal {
             System.out.println("q = " + SK.getPK().getQ());
             System.out.println("g = " + SK.getPK().getG());
 
-            BigInteger m1 = new BigInteger("1");
+            BigInteger m1 = new BigInteger("-10");
             //String msg1 = Ts + ";" + m1;
             //u2 vota
             BigInteger m2 = new BigInteger("1");
@@ -180,7 +180,7 @@ public class ElGamal {
             u = DecryptInTheExponent(CTH, SK);
             System.out.println("decrypted plaintext with Exponential El Gamal= " + u); // it should be 38*/
             SchnorrSig sigma = Sign(SK, CTH.getC().toString());
-            System.out.println("Verification = " + Verify(sigma, SK.getPK(), CTH.getC().toString()));
+            System.out.println("Verification = " + Verify(SK.getPK(), sigma, CTH.getC().toString()));
         }
 
     }
