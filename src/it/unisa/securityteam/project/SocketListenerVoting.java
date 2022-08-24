@@ -1,7 +1,6 @@
 package it.unisa.securityteam.project;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLServerSocket;
@@ -9,9 +8,6 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 
 public class SocketListenerVoting {
-
-    private static final String smartContracts = "smartContracts.txt";
-    private static HashMap<String, String> mapSmartContracts;
 
     private static boolean stateRunning;
     private static ElGamalSK SKAUP;
@@ -83,7 +79,7 @@ public class SocketListenerVoting {
             startTime(Integer.parseInt(args[0]));
             SKAUP = Utils.readSKByte("SecretPartialVoting", SKAUP);
             PKAU = Utils.readPKByte("PKAUfromVoting", PKAU);
-            System.out.println("Start Server Voting");
+            System.out.println("\t\tStart Server Voting");
 
             while (isStateRunning()) {
                 sslsocket = (SSLSocket) sslserversocket.accept();
@@ -92,7 +88,6 @@ public class SocketListenerVoting {
                 new SocketHandlerVoting(sslsocket, PKAU);
             }
             System.out.println("Time is over");
-            //protocolRecostruction();
         } catch (Exception e) {
             try {
                 sslsocket.close();
@@ -102,6 +97,5 @@ public class SocketListenerVoting {
         }
 
     }
-
 
 }

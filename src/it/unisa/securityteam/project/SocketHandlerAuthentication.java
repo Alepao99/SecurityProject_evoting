@@ -18,7 +18,7 @@ import javax.net.ssl.SSLSocket;
 public class SocketHandlerAuthentication extends Thread {
 
     private final int size = 32;
-
+    private final String databaseId_PKVoter = "databaseId_Pkv.txt";
     private SSLSocket sslsocket = null;
     private String key = null;
     private HashMap<String, String> mapDatabaseUA;
@@ -56,12 +56,12 @@ public class SocketHandlerAuthentication extends Thread {
             objectOut = new ObjectOutputStream(out);
             inputStream = new ObjectInputStream(in);
 
-            objectOut.writeObject("Insert Fiscal Code:");
+            objectOut.writeObject("\tInsert Fiscal Code:");
             objectOut.flush();
 
             String fiscalCode = (String) inputStream.readObject();
 
-            objectOut.writeObject("Insert UserName:");
+            objectOut.writeObject("\tInsert UserName:");
             objectOut.flush();
 
             String userName = (String) inputStream.readObject();
@@ -69,7 +69,7 @@ public class SocketHandlerAuthentication extends Thread {
             if (!checkExisting(fiscalCode, userName)) {
                 objectOut.writeBoolean(false);
                 objectOut.flush();
-                objectOut.writeObject("User not present in database");
+                objectOut.writeObject("\nUser not present in database");
                 objectOut.flush();
             } else {
                 objectOut.writeBoolean(true);
@@ -77,7 +77,7 @@ public class SocketHandlerAuthentication extends Thread {
 
                 int repetition = 3;
                 while (repetition > 0) {
-                    objectOut.writeObject("\nPlease insert password for voting ");
+                    objectOut.writeObject("\tPlease insert password for voting");
                     objectOut.flush();
 
                     String psw = (String) inputStream.readObject();
@@ -87,7 +87,7 @@ public class SocketHandlerAuthentication extends Thread {
                         objectOut.flush();
                         objectOut.writeObject(IDVoter);
                         objectOut.flush();
-                        objectOut.writeObject("You have access!");
+                        objectOut.writeObject("\nYou have access!");
                         objectOut.flush();
 
                         if (Utils.firstAccessClient(mapDatabaseId_PKvoter, IDVoter)) {
@@ -103,10 +103,10 @@ public class SocketHandlerAuthentication extends Thread {
                     objectOut.writeBoolean(false);
                     repetition--;
                     if (repetition == 0) {
-                        objectOut.writeObject("Attempts exhausted, Contact Assistance for Unlock");
+                        objectOut.writeObject("\nAttempts exhausted, Contact Assistance for Unlock");
                         objectOut.flush();
                     } else {
-                        objectOut.writeObject("Password error, You still have " + repetition + " attempts");
+                        objectOut.writeObject("\nPassword error, You still have " + repetition + " attempts");
                         objectOut.flush();
                     }
 
@@ -217,7 +217,7 @@ public class SocketHandlerAuthentication extends Thread {
      * Update the logged in customer file. Stores the customer's ID and PK
      */
     private void updateMapAuthFinish() {
-        try ( BufferedWriter out = new BufferedWriter(new FileWriter("databaseId_Pkv.txt"))) {
+        try ( BufferedWriter out = new BufferedWriter(new FileWriter(databaseId_PKVoter))) {
             for (Map.Entry<String, String> x : mapDatabaseId_PKvoter.entrySet()) {
                 out.write(
                         x.getKey() + " "

@@ -24,12 +24,9 @@ import javax.net.ssl.SSLSocket;
  */
 public class ServerRecostructionResult {
 
+    private static final int num_authority = 2;
     private static final String smartContracts = "smartContracts.txt";
     private static HashMap<String, String> mapSmartContracts;
-
-    private static boolean stateRunning;
-    private static ElGamalSK[] SKAU = new ElGamalSK[2];
-
     private static ElGamalPK PKAU;
 
     /**
@@ -45,19 +42,25 @@ public class ServerRecostructionResult {
         // create socket
         SSLServerSocketFactory sockfact = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault(); //
         SSLServerSocket sSock;
-        SSLSocket[] sslSock = new SSLSocket[2];
+        SSLSocket[] sslSock = new SSLSocket[num_authority];
         sSock = (SSLServerSocket) sockfact.createServerSocket(4000); // bind to port 4000
-        ElGamalPK[] PartialPK = new ElGamalPK[2];
-        for (int i = 0; i < 2; i++) {
+
+        ElGamalSK[] SKAU = new ElGamalSK[num_authority];
+        ElGamalPK[] PartialPK = new ElGamalPK[num_authority];
+        System.out.println("The referendum has ended. Waiting for authority connection");
+        for (int i = 0; i < num_authority; i++) {
+            System.out.println("Waiting for connections...");
             sslSock[i] = (SSLSocket) sSock.accept(); // accept connections
             System.out.println("new connection\n");
             SKAU[i] = ProtocolRecostructionSK(sslSock[i]);
+            System.out.println("Partial secret key acquired");
             PartialPK[i] = SKAU[i].getPK();
             sslSock[i].close();
         }
         PKAU = AggregatePartialPublicKeys(PartialPK);
-        protocolRecostruction();
-        
+        System.out.println("Scrutiny Phase started");
+        protocolRecostruction(SKAU);
+        System.out.println("Scrutiny Phase ended");
     }
 
     private static ElGamalSK ProtocolRecostructionSK(SSLSocket sslSocket) throws Exception {
@@ -93,22 +96,22 @@ public class ServerRecostructionResult {
         return list;
     }
 
-    private static BigInteger resultVoting(LinkedList<ElGamalCT> list) {
+    private static BigInteger resultVoting(LinkedList<ElGamalCT> list, ElGamalSK[] SKAU) {
         ElGamalCT CTH = list.get(0);
         for (int i = 1; i < list.size(); i++) {
             CTH = Homomorphism(PKAU, CTH, list.get(i));
         }
         ElGamalCT PartialDecCT = CTH;
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < num_authority - 1; i++) {
             PartialDecCT = PartialDecrypt(PartialDecCT, SKAU[i]);
         }
-        return DecryptInTheExponent(PartialDecCT, SKAU[1]);
+        return DecryptInTheExponent(PartialDecCT, SKAU[num_authority - 1]);
     }
 
-    private static void protocolRecostruction() {
+    private static void protocolRecostruction(ElGamalSK[] SKAU) {
         mapSmartContracts = Utils.readFile(smartContracts);
         LinkedList<ElGamalCT> list = listValue();
-        Utils.writeResult("Result.txt", resultVoting(list));
+        Utils.writeResult("Result.txt", resultVoting(list, SKAU));
 
     }
 

@@ -107,7 +107,7 @@ public class SocketClientVoting {
                 out.close();
                 in.close();
                 sslsocket.close();
-                System.out.println("Session close");
+                System.out.println("\tSession close");
             } catch (IOException ex) {
                 Logger.getLogger(SocketClientVoting.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -123,21 +123,36 @@ public class SocketClientVoting {
             ElGamalPK PKUA = (ElGamalPK) inputStream.readObject();
             System.out.println((String) inputStream.readObject());
 
-            BigInteger x = scanner.nextBigInteger();
+            //BigInteger x = scanner.nextBigInteger(); Start
+            String str = scanner.next();
+            while (!(str.compareToIgnoreCase("yes") == 0 || str.compareToIgnoreCase("no") == 0 || str.compareToIgnoreCase("white") == 0)) {
+                System.out.println("Choose your voting preference for the referendum:\nyes\t\twhite\t\t\tno");
+                str = scanner.next();
+            }
+            BigInteger x;
+            if (str.compareToIgnoreCase("yes") == 0) {
+                x = new BigInteger("1");
+            } else if (str.compareToIgnoreCase("yes") == 0) {
+                x = new BigInteger("-1");
+            } else {
+                x = new BigInteger("0");
+            }
+
+            //End
             ElGamalCT CTMsg = EncryptInTheExponent(PKUA, x);
             objectOut.writeObject(CTMsg);
             objectOut.flush();
 
             SchnorrSig s = Sign(SK, CTMsg.toString());
-            System.out.println(CTMsg.toString());
+
             objectOut.writeObject(s);
             objectOut.flush();
 
             if (inputStream.readBoolean()) {
-                System.out.println("Request to add vote");
+                System.out.println("\tRequest to add vote");
                 System.out.println((String) inputStream.readObject());
             } else {
-                System.out.println("Request to add vote denied");
+                System.out.println("\tRequest to add vote denied");
             }
         } catch (IOException ex) {
             Logger.getLogger(SocketClientVoting.class.getName()).log(Level.SEVERE, null, ex);

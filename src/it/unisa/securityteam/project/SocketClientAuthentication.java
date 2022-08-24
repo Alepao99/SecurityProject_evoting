@@ -39,7 +39,6 @@ public class SocketClientAuthentication {
             System.out.println("sslsocket=" + sslsocket);
             protocolAuth(sslsocket);
 
-            //protocol(args[0], Integer.parseInt(args[1]));
         } catch (IOException ex) {
             Logger.getLogger(SocketClientAuthentication.class.getName()).log(Level.SEVERE, null, ex);
         }

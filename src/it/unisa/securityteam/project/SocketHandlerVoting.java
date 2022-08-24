@@ -107,7 +107,7 @@ public class SocketHandlerVoting extends Thread {
 
             objectOut.writeObject(PKUA);
             objectOut.flush();
-            objectOut.writeObject("Choise your preference:\n1: Yes\n0: white\n-1: No");
+            objectOut.writeObject("Choose your voting preference for the referendum:\nyes\t\twhite\t\t\tno");
             objectOut.flush();
 
             ElGamalCT CTMsg = (ElGamalCT) inputStream.readObject();
@@ -154,6 +154,11 @@ public class SocketHandlerVoting extends Thread {
         Utils.writeFile(smartContracts, mapSmartContracts);
     }
 
+    /**
+     *
+     * @param x
+     * @return Boolean
+     */
     private boolean choise(String x) {
         return x.compareToIgnoreCase("yes") == 0;
     }

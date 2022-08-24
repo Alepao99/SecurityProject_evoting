@@ -1,12 +1,6 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package it.unisa.securityteam.project;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.logging.Level;
@@ -18,8 +12,10 @@ import javax.net.ssl.SSLSocketFactory;
  *
  * @author apaolillo
  */
-public class ServerAuthRecostruction {
+public class ServerAuthenticationRecostruction {
 
+    private static final String SKAuthFile = "SecretPartialAuth";
+    
     public static void main(String[] args) throws Exception {
 
         if (args.length != 2) {
@@ -34,12 +30,10 @@ public class ServerAuthRecostruction {
             SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
             SSLSocket sslsocket = (SSLSocket) sslsocketfactory.createSocket(args[0], Integer.parseInt(args[1]));
             sslsocket.startHandshake();
-            System.out.println("sslsocket=" + sslsocket);
             protocolRecostructionPartialKey(sslsocket);
-
-            //protocol(args[0], Integer.parseInt(args[1]));
+            System.out.println("Partial secret key sent successfully");
         } catch (IOException ex) {
-            Logger.getLogger(ServerAuthRecostruction.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ServerAuthenticationRecostruction.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -54,7 +48,7 @@ public class ServerAuthRecostruction {
             ObjectOutputStream outputStream;
 
             outputStream = new ObjectOutputStream(out);
-            SKP = Utils.readSKByte("SecretPartialAuth", SKP);
+            SKP = Utils.readSKByte(SKAuthFile, SKP);
             outputStream.writeObject(SKP);
             outputStream.flush();
             out.close();

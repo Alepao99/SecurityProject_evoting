@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package it.unisa.securityteam.project;
 
 import java.io.IOException;
@@ -18,6 +14,9 @@ import javax.net.ssl.SSLSocketFactory;
  */
 public class ServerVotingDealer {
 
+    private static final String SKVotingFile = "SecretPartialVoting";
+    private static final String PKAUFIle = "PKAUfromVoting";
+
     public static void main(String[] args) throws Exception {
         if (args.length != 2) {
             printUsage();
@@ -31,10 +30,8 @@ public class ServerVotingDealer {
             SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
             SSLSocket sslsocket = (SSLSocket) sslsocketfactory.createSocket(args[0], Integer.parseInt(args[1]));
             sslsocket.startHandshake();
-            System.out.println("sslsocket=" + sslsocket);
             protocolSKPartialPKAU(sslsocket);
-
-            //protocol(args[0], Integer.parseInt(args[1]));
+            System.out.println("Partial secret key acquired");
         } catch (IOException ex) {
             Logger.getLogger(ServerVotingDealer.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -44,6 +41,11 @@ public class ServerVotingDealer {
         System.out.println("Usage:\n\tjava client.SocketClient [address] [port]");
     }
 
+    /**
+     * 
+     * @param sslsocket
+     * @throws IOException 
+     */
     private static void protocolSKPartialPKAU(SSLSocket sslsocket) throws IOException {
         InputStream in = sslsocket.getInputStream();
 
@@ -53,8 +55,8 @@ public class ServerVotingDealer {
             inputStream = new ObjectInputStream(in);
             ElGamalSK SKP = (ElGamalSK) inputStream.readObject();
             ElGamalPK PKAU = (ElGamalPK) inputStream.readObject();
-            Utils.writeSKByte(SKP, "SecretPartialVoting");
-            Utils.writePKAUByte(PKAU, "PKAUfromVoting");
+            Utils.writeSKByte(SKP, SKVotingFile);
+            Utils.writePKByte(PKAU, PKAUFIle);
 
         } catch (Exception e) {
             e.printStackTrace();

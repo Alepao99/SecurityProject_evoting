@@ -79,7 +79,7 @@ public class SocketListenerAuthentication {
             sslserversocket = (SSLServerSocket) sslserversocketfactory.createServerSocket(4000);
 
             startTime(Integer.parseInt(args[0]));
-            System.out.println("Start Server Authentication");
+            System.out.println("\t\tStart Server Authentication");
             mapDatabaseUA = Utils.readFile(databaseUA);
             mapDatabaseId_PKVoter = Utils.readFile(databaseId_PKVoter);
 

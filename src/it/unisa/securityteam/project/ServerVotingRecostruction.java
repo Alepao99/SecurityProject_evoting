@@ -1,12 +1,6 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package it.unisa.securityteam.project;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.logging.Level;
@@ -19,6 +13,8 @@ import javax.net.ssl.SSLSocketFactory;
  * @author apaolillo
  */
 public class ServerVotingRecostruction {
+
+    private static final String SKVotingFile = "SecretPartialVoting";
 
     public static void main(String[] args) throws Exception {
         if (args.length != 2) {
@@ -33,10 +29,8 @@ public class ServerVotingRecostruction {
             SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
             SSLSocket sslsocket = (SSLSocket) sslsocketfactory.createSocket(args[0], Integer.parseInt(args[1]));
             sslsocket.startHandshake();
-            System.out.println("sslsocket=" + sslsocket);
             protocolRecostructionPartialKey(sslsocket);
-
-            //protocol(args[0], Integer.parseInt(args[1]));
+            System.out.println("Partial secret key sent successfully");
         } catch (IOException ex) {
             Logger.getLogger(ServerVotingRecostruction.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -53,7 +47,7 @@ public class ServerVotingRecostruction {
             ObjectOutputStream outputStream;
 
             outputStream = new ObjectOutputStream(out);
-            SKP = Utils.readSKByte("SecretPartialVoting", SKP);
+            SKP = Utils.readSKByte(SKVotingFile, SKP);
             outputStream.writeObject(SKP);
             outputStream.flush();
             out.close();

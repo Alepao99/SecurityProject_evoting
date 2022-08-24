@@ -108,6 +108,11 @@ public class Utils {
         return bytes;
     }
 
+    /**
+     *
+     * @param filename
+     * @param Map<String, String>
+     */
     public static void writeFile(String filename, Map<String, String> map) {
 
         File file = new File(dirName, filename);
@@ -123,6 +128,11 @@ public class Utils {
         }
     }
 
+    /**
+     *
+     * @param filename
+     * @return HashMap<String, String>
+     */
     public static HashMap<String, String> readFile(String filename) {
         File file = new File(dirName, filename);
         HashMap<String, String> map = new HashMap<>();
@@ -159,25 +169,38 @@ public class Utils {
     }
 
     /**
-     * Write the final result in a filename
+     *
+     * @param IDVoter
+     * @param filename
+     */
+    public static void writeIDVoterByte(String IDVoter, String filename) {
+        try ( ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(filename)))) {
+            out.writeObject(IDVoter);
+            out.close();
+        } catch (FileNotFoundException ex) {
+            System.err.println("FileNotFoundException in writeIDVoterByte");
+        } catch (IOException ex) {
+            System.err.println("IOException in writeIDVoterByte");
+        }
+    }
+
+    /**
+     * Read a Byte String IDVoter from a text file
      *
      * @param filename
-     * @param resultVoting
+     * @param IDVoter
+     * @return
      */
-    public static void writeResult(String filename, BigInteger resultVoting) {
-        File file = new File(dirName, filename);
-        try ( BufferedWriter out = new BufferedWriter(new FileWriter(file))) {
-            if (resultVoting.compareTo(BigInteger.ZERO) == 1) {
-                out.write("The yes won the referendum.\nNumber of yes: " + resultVoting.toString());
-            } else if (resultVoting.compareTo(BigInteger.ZERO) == 0) {
-                out.write("The referendum did not have a majority\n + Result: " + resultVoting.toString());
-            } else {
+    public static String readIDVoterByte(String filename, String IDVoter) {
+        try ( ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(new FileInputStream(filename)))) {
+            return (String) in.readObject();
 
-                out.write("The no won the referendum.\nNumber of no: " + resultVoting.abs().toString());
-            }
-        } catch (IOException ex) {
-            System.err.println("Error in writeFileResult");
+        } catch (FileNotFoundException ex) {
+            System.err.println("FileNotFoundException in readIDVoterByte");
+        } catch (IOException | ClassNotFoundException ex) {
+            System.err.println("Exception in readIDVoterByte");
         }
+        return null;
     }
 
     /**
@@ -195,17 +218,6 @@ public class Utils {
             byte[] input = bos1.toByteArray();
             out.writeObject(input);
             out.flush();
-            out.close();
-        } catch (FileNotFoundException ex) {
-            System.err.println("FileNotFoundException in writeSKByte");
-        } catch (IOException ex) {
-            System.err.println("IOException in writeSKByte");
-        }
-    }
-
-    public static void writeIDVoterByte(String IDVoter, String filename) {
-        try ( ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(filename)))) {
-            out.writeObject(IDVoter);
             out.close();
         } catch (FileNotFoundException ex) {
             System.err.println("FileNotFoundException in writeSKByte");
@@ -239,25 +251,6 @@ public class Utils {
     }
 
     /**
-     * Read a Byte String IDVoter from a text file
-     *
-     * @param filename
-     * @param IDVoter
-     * @return
-     */
-    public static String readIDVoterByte(String filename, String IDVoter) {
-        try ( ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(new FileInputStream(filename)))) {
-            return (String) in.readObject();
-
-        } catch (FileNotFoundException ex) {
-            System.err.println("FileNotFoundException in readIDVoterByte");
-        } catch (IOException | ClassNotFoundException ex) {
-            System.err.println("Exception in readIDVoterByte");
-        }
-        return null;
-    }
-
-    /**
      *
      * @return Boolean
      */
@@ -265,6 +258,12 @@ public class Utils {
         return mapDatabaseId_PKvoter.get(IDVoter).compareToIgnoreCase("null") == 0;
     }
 
+    /**
+     *
+     * @param smartContracts
+     * @param PKVoter
+     * @return Boolean
+     */
     public static boolean alreadyVoting(String smartContracts, ElGamalPK PKVoter) {
         HashMap<String, String> map = Utils.readFile(smartContracts);
         if (map.containsKey(Utils.createStringPKElGamal(PKVoter))) {
@@ -273,24 +272,12 @@ public class Utils {
         return false;
     }
 
-    /*
-
-    static String voteCLient(String smartContracts, ElGamalPK PKVoter, ElGamalSK SKUA) {
-        HashMap<String, String> map = Utils.readFile(smartContracts);
-        String[] str = map.get(Utils.createStringPKElGamal(PKVoter)).split(",");
-        ElGamalCT CT = new ElGamalCT(new BigInteger(str[0]), new BigInteger(str[1]));
-        BigInteger vote = DecryptInTheExponent(CT, SKUA);
-
-        if (vote.compareTo(BigInteger.ZERO) == 1) {
-            return "Yes";
-        } else if (vote.compareTo(BigInteger.ZERO) == 0) {
-            return "White";
-        } else {
-            return "No";
-        }
-    }
+    /**
+     * 
+     * @param PKAU
+     * @param filename 
      */
-    public static void writePKAUByte(ElGamalPK PKAU, String filename) {
+    public static void writePKByte(ElGamalPK PKAU, String filename) {
         try ( ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(filename)))) {
             ByteArrayOutputStream bos1 = new ByteArrayOutputStream();
             ObjectOutputStream oos1 = new ObjectOutputStream(bos1);
@@ -307,6 +294,12 @@ public class Utils {
         }
     }
 
+    /**
+     * 
+     * @param filename
+     * @param PK
+     * @return ElGamalPK
+     */
     static ElGamalPK readPKByte(String filename, ElGamalPK PK) {
         try ( ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(new FileInputStream(filename)))) {
             byte[] output = (byte[]) in.readObject();
@@ -322,5 +315,29 @@ public class Utils {
             System.err.println("Exception in readSKByte");
         }
         return null;
+    }
+
+    /**
+     * Write the final result in a filename
+     *
+     * @param filename
+     * @param resultVoting
+     */
+    public static void writeResult(String filename, BigInteger resultVoting) {
+        File file = new File(dirName, filename);
+        try ( BufferedWriter out = new BufferedWriter(new FileWriter(file))) {
+            if (resultVoting.compareTo(BigInteger.ZERO) == 1) {
+                System.out.println("The yes won the referendum.\nNumber of yes: " + resultVoting.toString());
+                out.write("The yes won the referendum.\nNumber of yes: " + resultVoting.toString());
+            } else if (resultVoting.compareTo(BigInteger.ZERO) == 0) {
+                System.out.println("The referendum did not have a majority\n + Result: " + resultVoting.toString());
+                out.write("The referendum did not have a majority\n + Result: " + resultVoting.toString());
+            } else {
+                System.out.println("The no won the referendum.\nNumber of no: " + resultVoting.abs().toString());
+                out.write("The no won the referendum.\nNumber of no: " + resultVoting.abs().toString());
+            }
+        } catch (IOException ex) {
+            System.err.println("Error in writeFileResult");
+        }
     }
 }

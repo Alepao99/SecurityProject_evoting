@@ -10,6 +10,15 @@ import javax.net.ssl.SSLSocket;
 
 public class DealerSKAU {
 
+    private static final int num_authority = 2;
+
+    /**
+     * Protocol execution Dealer
+     * @param sSock
+     * @param SKP
+     * @param PKAU
+     * @throws Exception 
+     */
     static void Protocol(Socket sSock, ElGamalSK SKP, ElGamalPK PKAU) throws Exception {
 
         OutputStream out = sSock.getOutputStream();
@@ -44,30 +53,30 @@ public class DealerSKAU {
         // create socket
         SSLServerSocketFactory sockfact = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault(); //
         SSLServerSocket sSock;
-        SSLSocket[] sslSock = new SSLSocket[2];
+        SSLSocket[] sslSock = new SSLSocket[num_authority];
         sSock = (SSLServerSocket) sockfact.createServerSocket(4000); // bind to port 4000
-        
+
         ElGamalSK Params = SetupParameters(64); // in real implementation set the security parameter to at least 2048 bits
         //there is some non-trusted entity that generates the parameters
 
-        // we now suppose there are 3 authorities
-        ElGamalSK[] SK = new ElGamalSK[2];
+        // we now suppose there are 2 authorities
+        ElGamalSK[] SK = new ElGamalSK[num_authority];
         for (int i = 0; i < 2; i++) {
             SK[i] = Setup(Params);
         }
 
-        ElGamalPK[] PartialPK = new ElGamalPK[2];
-
-        for (int i = 0; i < 2; i++) {
+        ElGamalPK[] PartialPK = new ElGamalPK[num_authority];
+        for (int i = 0; i < num_authority; i++) {
             PartialPK[i] = SK[i].getPK();
         }
+
         ElGamalPK PKAU = AggregatePartialPublicKeys(PartialPK);
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < num_authority; i++) {
             System.out.println("Waiting for connections...");
             sslSock[i] = (SSLSocket) sSock.accept(); // accept connections
-            System.out.println("new connection\n");
+            System.out.println("Connection to Authority Server\n");
             Protocol(sslSock[i], SK[i], PKAU);
-
+            System.out.println("Partial secret key sent successfully\n");
         }
 
     }

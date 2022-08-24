@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package it.unisa.securityteam.project;
 
 import java.io.IOException;
@@ -16,8 +12,11 @@ import javax.net.ssl.SSLSocketFactory;
  *
  * @author apaolillo
  */
-public class ServerAuthDealer {
+public class ServerAuthenticationDealer {
 
+    private static final String SKAuthFile = "SecretPartialAuth";
+    private static final String PKAUFIle = "PKAUfromAuth";
+    
     public static void main(String[] args) throws Exception {
 
         if (args.length != 2) {
@@ -32,12 +31,10 @@ public class ServerAuthDealer {
             SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
             SSLSocket sslsocket = (SSLSocket) sslsocketfactory.createSocket(args[0], Integer.parseInt(args[1]));
             sslsocket.startHandshake();
-            System.out.println("sslsocket=" + sslsocket);
             protocolSKPartialPKAU(sslsocket);
-
-            //protocol(args[0], Integer.parseInt(args[1]));
+            System.out.println("Partial secret key acquired");
         } catch (IOException ex) {
-            Logger.getLogger(ServerAuthDealer.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ServerAuthenticationDealer.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -47,16 +44,14 @@ public class ServerAuthDealer {
 
     private static void protocolSKPartialPKAU(SSLSocket sslsocket) throws IOException {
         InputStream in = sslsocket.getInputStream();
-
         try {
             ObjectInputStream inputStream;
 
             inputStream = new ObjectInputStream(in);
             ElGamalSK SKP = (ElGamalSK) inputStream.readObject();
             ElGamalPK PKAU = (ElGamalPK) inputStream.readObject();
-            Utils.writeSKByte(SKP, "SecretPartialAuth");
-            Utils.writePKAUByte(PKAU, "PKAUfromAuth");
-            
+            Utils.writeSKByte(SKP, SKAuthFile);
+            Utils.writePKByte(PKAU, PKAUFIle);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -64,7 +59,7 @@ public class ServerAuthDealer {
                 in.close();
                 sslsocket.close();
             } catch (IOException ex) {
-                Logger.getLogger(ServerAuthDealer.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ServerAuthenticationDealer.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
