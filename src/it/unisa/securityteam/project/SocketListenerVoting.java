@@ -1,13 +1,7 @@
 package it.unisa.securityteam.project;
 
-import static it.unisa.securityteam.project.ElGamal.DecryptInTheExponent;
-import static it.unisa.securityteam.project.ElGamal.Homomorphism;
-import static it.unisa.securityteam.project.ElGamal.Setup;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLServerSocket;
@@ -20,7 +14,8 @@ public class SocketListenerVoting {
     private static HashMap<String, String> mapSmartContracts;
 
     private static boolean stateRunning;
-    private static ElGamalSK SKUA;
+    private static ElGamalSK SKAUP;
+    private static ElGamalPK PKAU;
 
     /**
      *
@@ -86,17 +81,18 @@ public class SocketListenerVoting {
             sslserversocket = (SSLServerSocket) sslserversocketfactory.createServerSocket(4001);
 
             startTime(Integer.parseInt(args[0]));
-            SKUA = Setup(64);
+            SKAUP = Utils.readSKByte("SecretPartialVoting", SKAUP);
+            PKAU = Utils.readPKByte("PKAUfromVoting", PKAU);
             System.out.println("Start Server Voting");
 
             while (isStateRunning()) {
                 sslsocket = (SSLSocket) sslserversocket.accept();
                 System.out.println("sslsocket:" + sslsocket);
                 // assign a handler to process data
-                new SocketHandlerVoting(sslsocket, SKUA);
+                new SocketHandlerVoting(sslsocket, PKAU);
             }
             System.out.println("Time is over");
-            protocolRecostruction();
+            //protocolRecostruction();
         } catch (Exception e) {
             try {
                 sslsocket.close();
@@ -107,33 +103,5 @@ public class SocketListenerVoting {
 
     }
 
-    private static ElGamalCT recoveryCT(String ctmsg) {
-        String[] parts = ctmsg.split(",");
-        return new ElGamalCT(new BigInteger(parts[0]), new BigInteger(parts[1]));
-    }
-
-    private static LinkedList<ElGamalCT> listValue() {
-        LinkedList<ElGamalCT> list = new LinkedList<>();
-        for (Map.Entry<String, String> x : mapSmartContracts.entrySet()) {
-            String ctmsg = x.getValue();
-            list.add(recoveryCT(ctmsg));
-        }
-        return list;
-    }
-
-    private static BigInteger resultVoting(LinkedList<ElGamalCT> list) {
-        ElGamalCT CTH = list.get(0);
-        for (int i = 1; i < list.size(); i++) {
-            CTH = Homomorphism(SKUA.getPK(), CTH, list.get(i));
-        }
-        return DecryptInTheExponent(CTH, SKUA);
-    }
-
-    private static void protocolRecostruction() {
-        mapSmartContracts = Utils.readFile(smartContracts);
-        LinkedList<ElGamalCT> list = listValue();
-        Utils.writeResult("Result.txt", resultVoting(list));
-
-    }
 
 }

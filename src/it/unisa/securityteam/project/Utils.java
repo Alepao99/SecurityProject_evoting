@@ -273,6 +273,8 @@ public class Utils {
         return false;
     }
 
+    /*
+
     static String voteCLient(String smartContracts, ElGamalPK PKVoter, ElGamalSK SKUA) {
         HashMap<String, String> map = Utils.readFile(smartContracts);
         String[] str = map.get(Utils.createStringPKElGamal(PKVoter)).split(",");
@@ -287,5 +289,38 @@ public class Utils {
             return "No";
         }
     }
+     */
+    public static void writePKAUByte(ElGamalPK PKAU, String filename) {
+        try ( ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(filename)))) {
+            ByteArrayOutputStream bos1 = new ByteArrayOutputStream();
+            ObjectOutputStream oos1 = new ObjectOutputStream(bos1);
+            oos1.writeObject(PKAU);
+            oos1.flush();
+            byte[] input = bos1.toByteArray();
+            out.writeObject(input);
+            out.flush();
+            out.close();
+        } catch (FileNotFoundException ex) {
+            System.err.println("FileNotFoundException in writePKAUByte");
+        } catch (IOException ex) {
+            System.err.println("IOException in writePKAUByte");
+        }
+    }
 
+    static ElGamalPK readPKByte(String filename, ElGamalPK PK) {
+        try ( ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(new FileInputStream(filename)))) {
+            byte[] output = (byte[]) in.readObject();
+            ByteArrayInputStream bis = new ByteArrayInputStream(output);
+            ObjectInput inT = null;
+            inT = new ObjectInputStream(bis);
+            PK = (ElGamalPK) inT.readObject();
+            in.close();
+            return PK;
+        } catch (FileNotFoundException ex) {
+            System.err.println("FileNotFoundException in readSKByte");
+        } catch (IOException | ClassNotFoundException ex) {
+            System.err.println("Exception in readSKByte");
+        }
+        return null;
+    }
 }

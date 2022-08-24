@@ -50,9 +50,12 @@ public class PreliminarySetting {
         deleteFileContents("smartContracts.txt");
         deleteFileContents("ClientElGamalSK");
         deleteFileContents("ClientElGamalID");
+        deleteFileContents("PKAUfromAuth");
+        deleteFileContents("PKAUfromVoting");
+        deleteFileContents("SecretPartialAuth");
+        deleteFileContents("SecretPartialVoting");
 
     }
-
 
     private static String getKey(String userName, String fiscalCode) throws NoSuchAlgorithmException {
         MessageDigest hash = MessageDigest.getInstance("SHA-256");

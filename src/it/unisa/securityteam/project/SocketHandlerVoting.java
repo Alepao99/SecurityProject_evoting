@@ -1,15 +1,12 @@
 package it.unisa.securityteam.project;
 
 import static it.unisa.securityteam.project.ElGamal.*;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLSocket;
@@ -17,7 +14,7 @@ import javax.net.ssl.SSLSocket;
 public class SocketHandlerVoting extends Thread {
 
     private SSLSocket sslsocket = null;
-    private ElGamalSK SKUA = null;
+    private ElGamalPK PKUA = null;
 
     private HashMap<String, String> mapSmartContracts;
     private HashMap<String, String> mapDatabaseId_Pkv;
@@ -31,9 +28,9 @@ public class SocketHandlerVoting extends Thread {
      * @param sslsocket
      * @param SKUA
      */
-    public SocketHandlerVoting(SSLSocket sslsocket, ElGamalSK SKUA) {
+    public SocketHandlerVoting(SSLSocket sslsocket, ElGamalPK PKUA) {
         this.sslsocket = sslsocket;
-        this.SKUA = SKUA;
+        this.PKUA = PKUA;
         try {
             start();
         } catch (Exception e) {
@@ -64,7 +61,7 @@ public class SocketHandlerVoting extends Thread {
                 if (Utils.alreadyVoting(smartContracts, PKVoter)) {
                     objectOut.writeBoolean(true);
                     objectOut.flush();
-                    objectOut.writeObject("This user has already voted\nHis vote was\n" + Utils.voteCLient(smartContracts, PKVoter, SKUA));
+                    objectOut.writeObject("This user has already voted\n");
                     objectOut.flush();
                     objectOut.writeObject("Do you want to vote with a new vote?");
                     objectOut.flush();
@@ -108,7 +105,7 @@ public class SocketHandlerVoting extends Thread {
             objectOut.writeObject("The user can vote");
             objectOut.flush();
 
-            objectOut.writeObject(SKUA);
+            objectOut.writeObject(PKUA);
             objectOut.flush();
             objectOut.writeObject("Choise your preference:\n1: Yes\n0: white\n-1: No");
             objectOut.flush();

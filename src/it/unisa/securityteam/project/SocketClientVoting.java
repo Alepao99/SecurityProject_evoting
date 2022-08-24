@@ -120,11 +120,11 @@ public class SocketClientVoting {
         try {
             System.out.println((String) inputStream.readObject());
 
-            ElGamalSK SKUA = (ElGamalSK) inputStream.readObject();
+            ElGamalPK PKUA = (ElGamalPK) inputStream.readObject();
             System.out.println((String) inputStream.readObject());
 
             BigInteger x = scanner.nextBigInteger();
-            ElGamalCT CTMsg = EncryptInTheExponent(SKUA.getPK(), x);
+            ElGamalCT CTMsg = EncryptInTheExponent(PKUA, x);
             objectOut.writeObject(CTMsg);
             objectOut.flush();
 

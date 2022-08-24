@@ -24,9 +24,9 @@ public class ElGamal {
             }// 1-2^-50
 
         }
+
 // henceforth we have that p and q are both prime numbers and p=2q+1
 // Subgroups of Zp* have order 2,q,2q
-
         g = new BigInteger("4"); // 4 is quadratic residue so it generates a group of order q
 // g is a generator of the subgroup the QR modulo p
 // in particular g generates q elements where q is prime
@@ -36,6 +36,18 @@ public class ElGamal {
 
         ElGamalPK PK = new ElGamalPK(p, q, g, h, securityparameter);
 
+        return new ElGamalSK(s, PK);
+    }
+
+    public static ElGamalSK Setup(ElGamalSK SK) { // computes a partial public key 
+        // given the public parameters taken as input in SK
+
+        SecureRandom sc = new SecureRandom();
+        BigInteger s = new BigInteger(SK.getPK().getSecurityparameter(), sc); // i-th authority has s_i
+        BigInteger h = SK.getPK().getG().modPow(s, SK.getPK().getP()); // and h_i=g^{s_i}
+
+        ElGamalPK PK = new ElGamalPK(SK.getPK().getP(), SK.getPK().getQ(), SK.getPK().getG(), h, SK.getPK().getSecurityparameter()); //
+// return the partial public key of i-th authority
         return new ElGamalSK(s, PK);
     }
 
@@ -86,7 +98,7 @@ public class ElGamal {
 
         BigInteger M = new BigInteger("-100"); //Da modificare se vogliamo prendere più voti negativi, Inutile in questa applicazione
         while (true) {
-            
+
             if (SK.getPK().getG().modPow(M, SK.getPK().getP()).compareTo(res) == 0) {
                 return M;
             }
@@ -145,6 +157,68 @@ public class ElGamal {
 
     }
 
+    public static ElGamalSK SetupParameters(int securityparameter) {
+        // since the authorities should work over the same group Zp* we 
+        // need to define a SetupParameters method that  computes the public parameters p,q,g shared
+        //  by all authorities.
+        // For  compatibility with the our structures we compute but ignore h,s.
+        BigInteger p, q, g, h, s;
+
+        SecureRandom sc = new SecureRandom();
+
+        while (true) {
+            q = BigInteger.probablePrime(securityparameter, sc);
+
+            p = q.multiply(BigInteger.TWO);
+            p = p.add(BigInteger.ONE);
+
+            if (p.isProbablePrime(50) == true) {
+                break;
+            }
+
+        }
+
+        g = new BigInteger("4");
+        /*
+while(true) {
+	
+	if (isqr(g,p)==1)break; 
+	g=g.add(BigInteger.ONE);
+}
+         */
+        s = BigInteger.ZERO;
+        h = BigInteger.ZERO;
+
+        ElGamalPK PK = new ElGamalPK(p, q, g, h, securityparameter);
+
+        return new ElGamalSK(s, PK);
+    }
+
+    public static ElGamalPK AggregatePartialPublicKeys(ElGamalPK PK[]) {
+
+        BigInteger tmp = BigInteger.ONE;
+        // the array PK contains the partial public keys of the m-authorities
+        // in particular PK[i].h=h_i=g^{s_i}
+
+        for (int i = 0; i < PK.length; i++) {
+            tmp = tmp.multiply(PK[i].getH()).mod(PK[0].getP());
+        }
+        // here tmp=\Prod_{i=1}^m h_i
+        // therefore tmp is the General public key h
+        return new ElGamalPK(PK[0].getP(), PK[0].getQ(), PK[0].getG(), tmp, PK[0].getSecurityparameter());
+
+    }
+
+    public static ElGamalCT PartialDecrypt(ElGamalCT CT, ElGamalSK SK) {
+        // CT is the ciphertext to decrypt or a ciphertext resulting from a partial decryption
+        // Suppose SK is the key of the i-th authority. Then SK.s is s_i
+        BigInteger tmp = CT.getC2().modPow(SK.getS(), SK.getPK().getP()); // tmp=C2^s_i 
+        tmp = tmp.modInverse(SK.getPK().getP());   // tmp=C2^{-s_i}
+        BigInteger newC = tmp.multiply(CT.getC()).mod(SK.getPK().getP()); // newC=C*tmp=(h^r*M)*C2^{-s_i}=h^r*M*g^{-rs_i}
+
+        return new ElGamalCT(newC, CT.getC2());
+    }
+
     public static void main(String[] args) throws Exception {
         // Test El Gamal Encrypt+Decrypt
 
@@ -164,13 +238,13 @@ public class ElGamal {
             BigInteger m2 = new BigInteger("1");
             BigInteger m3 = new BigInteger("-1");
             ElGamalCT c1 = EncryptInTheExponent(SK.getPK(), m1); // encrypt vote in CT
-                           System.out.println(c1.getC());
+            System.out.println(c1.getC());
             //Cifro m2
             ElGamalCT c2 = EncryptInTheExponent(SK.getPK(), m2);
-                           System.out.println(c2.getC());
+            System.out.println(c2.getC());
             ElGamalCT c3 = EncryptInTheExponent(SK.getPK(), m3);
-                           System.out.println(c3.getC());
-                   System.out.println(DecryptInTheExponent(c3,SK));
+            System.out.println(c3.getC());
+            System.out.println(DecryptInTheExponent(c3, SK));
             LinkedList<ElGamalCT> list = new LinkedList<>();
             list.add(c1);
             list.add(c2);
@@ -180,7 +254,7 @@ public class ElGamal {
                 System.out.println(CTH.getC());
                 CTH = Homomorphism(SK.getPK(), CTH, list.get(i));
             }
-System.out.println("ok");
+            System.out.println("ok");
             BigInteger u;
             u = DecryptInTheExponent(CTH, SK);
             System.out.println("ok");
