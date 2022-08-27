@@ -44,7 +44,7 @@ public class DealerSKAU {
 
     public static void main(String[] args) throws Exception {
 
-        if (System.getProperty(
+        if (System.getProperty(     
                 "javax.net.ssl.keyStore") == null || System.getProperty("javax.net.ssl.keyStorePassword") == null) {
             // set keystore store location
             System.setProperty("javax.net.ssl.keyStore", "keystoreServerDealer");

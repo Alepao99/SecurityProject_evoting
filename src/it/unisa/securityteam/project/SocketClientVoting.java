@@ -132,7 +132,7 @@ public class SocketClientVoting {
             BigInteger x;
             if (str.compareToIgnoreCase("yes") == 0) {
                 x = new BigInteger("1");
-            } else if (str.compareToIgnoreCase("yes") == 0) {
+            } else if (str.compareToIgnoreCase("no") == 0) {
                 x = new BigInteger("-1");
             } else {
                 x = new BigInteger("0");

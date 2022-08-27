@@ -330,8 +330,8 @@ public class Utils {
                 System.out.println("The yes won the referendum.\nNumber of yes: " + resultVoting.toString());
                 out.write("The yes won the referendum.\nNumber of yes: " + resultVoting.toString());
             } else if (resultVoting.compareTo(BigInteger.ZERO) == 0) {
-                System.out.println("The referendum did not have a majority\n + Result: " + resultVoting.toString());
-                out.write("The referendum did not have a majority\n + Result: " + resultVoting.toString());
+                System.out.println("The referendum did not have a majority\nResult: " + resultVoting.toString());
+                out.write("The referendum did not have a majority\nResult: " + resultVoting.toString());
             } else {
                 System.out.println("The no won the referendum.\nNumber of no: " + resultVoting.abs().toString());
                 out.write("The no won the referendum.\nNumber of no: " + resultVoting.abs().toString());

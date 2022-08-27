@@ -17,11 +17,12 @@ public class SocketClientAuthentication {
     private static final String fileClientSK = "ClientElGamalSK";
     private static final String fileClientID = "ClientElGamalID";
     private static String IDVoter = new String();
-/**
- * 
- * @param args
- * @throws Exception 
- */
+
+    /**
+     *
+     * @param args
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
 
         if (args.length != 2) {
@@ -50,7 +51,8 @@ public class SocketClientAuthentication {
 
     /**
      * Communication protocol with the authentication server
-     * @param sslsocket 
+     *
+     * @param sslsocket
      */
     private static void protocolAuth(SSLSocket sslsocket) {
         OutputStream out = null;
@@ -60,7 +62,6 @@ public class SocketClientAuthentication {
         try {
             out = sslsocket.getOutputStream();
             in = sslsocket.getInputStream();
-            //protocol(sslsocket);
 
             objectOut = new ObjectOutputStream(out);
             inputStream = new ObjectInputStream(in);
@@ -87,7 +88,6 @@ public class SocketClientAuthentication {
                     if (inputStream.readBoolean()) {
                         IDVoter = (String) inputStream.readObject();
                         System.out.println((String) inputStream.readObject());
-                        //if (firstAccess())
                         if (inputStream.readBoolean()) {
                             protocolFirstAccess(objectOut);
                         }
@@ -122,8 +122,8 @@ public class SocketClientAuthentication {
     }
 
     /**
-     * 
-     * @param objectOut 
+     *
+     * @param objectOut
      */
     private static void protocolFirstAccess(ObjectOutputStream objectOut) {
         ElGamalSK SK = Setup(64); //questioni di tempo a 64 altrienti 2048 
@@ -146,8 +146,8 @@ public class SocketClientAuthentication {
             Logger.getLogger(SocketClientAuthentication.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        Utils.writeSKByte(SK,fileClientSK);
-        Utils.writeIDVoterByte(IDVoter,fileClientID);
+        Utils.writeSKByte(SK, fileClientSK);
+        Utils.writeIDVoterByte(IDVoter, fileClientID);
     }
 
 }

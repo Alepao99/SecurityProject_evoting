@@ -1,2 +1,2 @@
-The yes won the referendum.
-Number of yes: 2
+The referendum did not have a majority
+Result: 0

@@ -36,11 +36,10 @@ public class PreliminarySetting {
 
         List<User> list = new ArrayList<>();
 
-        list.add(new User("a.paolillo26@studenti.unisa.it", "PLLLSN99C20A717X", "password1"));
-        list.add(new User("t.landi3@studenti.unisa.it", "PLLLSN99C20A717X", "password2"));
-        list.add(new User("f.santorelli8@studenti.unisa.it", "PLLLSN99C20A717X", "password3"));
-        list.add(new User("m.savarese18@studenti.unisa.it", "PLLLSN99C20A717X", "password4"));
-        list.add(new User("prova", "prova", "psw"));
+        list.add(new User("u1@gmail.com", "fc1", "psw1"));
+        list.add(new User("u2@gmail.com", "fc2", "psw2"));
+        list.add(new User("u3@gmail.com", "fc3", "psw3"));
+        list.add(new User("u4@gmail.com", "fc4", "psw4"));
         for (User x : list) {
             mapAuthStart.put(getKey(x.getUserName(), x.getFiscalCode()), getID(x.getUserName(), x.getPsw()));
             mapAuthFinish.put(getID(x.getUserName(), x.getPsw()), "null");
